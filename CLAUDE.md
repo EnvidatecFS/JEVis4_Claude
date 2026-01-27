@@ -20,61 +20,27 @@ JEVis4_Claude is a Maven-based Java project under the `org.jevis` package.
 - **Database:** PostgreSQL
 - **Frontend:** htmx (for dynamic HTML interactions)
 - **Template Engine:** JTE (Java Template Engine)
+- **JavaScript Visualization Library:** prefer Apache ECharts
 
 ## Build System
 
 This project uses Apache Maven for build management and dependency resolution.
 
+## Build and Test Commands
+- Build and run tests: `mvn clean test`
+- Quick compile check: `mvn compile`
+- Run specific test: `mvn test -Dtest=ClassName`
+
+## Development Guidelines
+- **Verification**: Always run `mvn clean test` after making changes to ensure the build remains stable.
+- **Error Handling**: If the build fails, analyze the Maven output, fix the compilation errors or failing tests, and re-run the build.
+- **Code Style**: Maintain existing naming conventions and patterns found in the project.
+- **SRF protection**: "I am using htmx in a project where CSRF protection is enabled, but htmx is not sending the token with its requests. Please configure htmx to automatically include the CSRF token in all AJAX headers.
+
+
 ### Common Maven Commands
 
 **Run the Spring Boot application (development):**
-
-**IMPORTANT:** Before starting a new Spring Boot instance, always stop any running instance first to avoid port conflicts (Port 8080).
-
-```bash
-# Step 1: Find and kill existing process on port 8080
-netstat -ano | findstr ":8080"
-# Note the PID (last column), then:
-taskkill //F //PID <PID>
-
-# Step 2: Start the application
-mvn spring-boot:run
-```
-
-**Build the project:**
-```bash
-mvn clean package
-```
-
-**Run the application from JAR:**
-```bash
-java -jar target/JEVis4_Claude-1.0-SNAPSHOT.jar
-```
-
-**Run tests:**
-```bash
-mvn test
-```
-
-**Run a single test class:**
-```bash
-mvn test -Dtest=AppTest
-```
-
-**Run a specific test method:**
-```bash
-mvn test -Dtest=AppTest#contextLoads
-```
-
-**Clean build artifacts:**
-```bash
-mvn clean
-```
-
-**Compile only:**
-```bash
-mvn compile
-```
 
 ## Project Structure
 
@@ -282,24 +248,4 @@ The application uses a three-area layout for authenticated pages:
 
 ## Important Development Procedures
 
-### Restarting the Application
 
-Before running `mvn spring-boot:run`, always ensure no previous instance is running:
-
-1. **Check for running instance:**
-   ```bash
-   netstat -ano | findstr ":8080"
-   ```
-
-2. **Kill the process if found:**
-   ```bash
-   taskkill //F //PID <PID>
-   ```
-   (Replace `<PID>` with the process ID from step 1)
-
-3. **Then start the application:**
-   ```bash
-   mvn spring-boot:run
-   ```
-
-**Why this matters:** Spring Boot binds to port 8080. If a previous instance is still running, the new instance will fail with "Port 8080 was already in use".

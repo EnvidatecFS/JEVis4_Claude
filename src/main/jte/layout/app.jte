@@ -20,8 +20,27 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
 
+    <!-- CSRF Token for htmx -->
+    @if(_csrf != null)
+    <meta name="csrf-token" content="${_csrf.getToken()}">
+    <meta name="csrf-header" content="${_csrf.getHeaderName()}">
+    <meta name="csrf-param" content="${_csrf.getParameterName()}">
+    @endif
+
     <link rel="stylesheet" href="/css/theme.css">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+        // Configure htmx to send CSRF token with all requests
+        document.addEventListener('DOMContentLoaded', function() {
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            var csrfHeader = document.querySelector('meta[name="csrf-header"]');
+            if (csrfToken && csrfHeader) {
+                document.body.addEventListener('htmx:configRequest', function(event) {
+                    event.detail.headers[csrfHeader.content] = csrfToken.content;
+                });
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="app-layout">

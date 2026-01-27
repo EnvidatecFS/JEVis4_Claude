@@ -144,14 +144,14 @@
 @if(totalPages > 1)
     <div class="pagination">
         <button class="btn btn-outline btn-sm"
-                ${currentPage == 0 ? "disabled" : ""}
+                disabled="${currentPage == 0}"
                 hx-get="/sensors/table?page=${currentPage - 1}&search=${search}&type=${type}&status=${status}&sortBy=${sortBy}&sortDir=${sortDir}"
                 hx-target="#sensors-table-container">
             Zurück
         </button>
         <span class="pagination-info">Seite ${currentPage + 1} von ${totalPages}</span>
         <button class="btn btn-outline btn-sm"
-                ${currentPage >= totalPages - 1 ? "disabled" : ""}
+                disabled="${currentPage >= totalPages - 1}"
                 hx-get="/sensors/table?page=${currentPage + 1}&search=${search}&type=${type}&status=${status}&sortBy=${sortBy}&sortDir=${sortDir}"
                 hx-target="#sensors-table-container">
             Weiter

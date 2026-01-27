@@ -1,0 +1,3 @@
+-- JEVis4 Sample Data
+-- Note: Sensors and measurements are initialized via DataInitializer.java
+-- This file is kept for any additional static data that might be needed

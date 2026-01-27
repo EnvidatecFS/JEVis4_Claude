@@ -278,20 +278,20 @@ class MeasurementServiceTest {
 
     @Test
     void testGetMeasurementsInRange_Paginated() {
-        // Arrange
-        Instant baseTime = Instant.now();
+        // Arrange - truncate to avoid nanosecond precision issues
+        Instant baseTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
         for (int i = 0; i < 50; i++) {
             Instant timestamp = baseTime.plus(i, ChronoUnit.MINUTES);
             MeasurementId id = new MeasurementId(testSensor.getId(), timestamp, (short) 0);
             measurementService.createMeasurement(new Measurement(id, new BigDecimal("100." + i)));
         }
 
-        // Act
+        // Act - Query range includes minute 0 through minute 49 (50 measurements total)
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id.measuredAt"));
         Page<Measurement> page = measurementService.getMeasurementsInRange(
             testSensor.getId(),
             baseTime,
-            baseTime.plus(50, ChronoUnit.MINUTES),
+            baseTime.plus(49, ChronoUnit.MINUTES),
             pageable
         );
 

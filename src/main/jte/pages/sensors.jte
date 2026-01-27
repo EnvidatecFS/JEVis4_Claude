@@ -1,9 +1,13 @@
+@import org.springframework.security.web.csrf.CsrfToken
+
 @param String username
+@param CsrfToken _csrf = null
 
 @template.layout.app(
     title = "Messpunkte",
     username = username,
     currentPage = "sensors",
+    _csrf = _csrf,
     content = @`
         <div class="page-header d-flex justify-between align-center">
             <div>
