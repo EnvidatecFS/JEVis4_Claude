@@ -5,18 +5,17 @@
 
 <header class="app-header">
     <div class="header-left">
-        <!-- Mobile Menu Toggle -->
-        <button class="header-toggle" onclick="toggleMobileSidebar()" title="Navigation öffnen">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Sidebar Toggle Button (aligned with sidebar icons) -->
+        <button class="sidebar-toggle-header" onclick="toggleSidebar()" title="Navigation umschalten">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
 
-        <!-- Mobile Logo -->
-        <div class="header-logo">
-            <img src="/images/JEVis4_logo.png" alt="JEVis 4 Logo" style="width: 24px; height: 24px; margin-right: 8px;">
-            <span>JEVis 4</span>
-        </div>
+        <!-- Logo -->
+        <a href="/home" class="header-logo">
+            <img src="/images/JEVis4_logo.png" alt="JEVis 4 Logo" class="header-logo-img">
+        </a>
     </div>
 
     <div class="header-right">

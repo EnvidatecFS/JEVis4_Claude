@@ -1,13 +1,6 @@
 @param String currentPage = ""
 
 <aside class="sidebar" id="sidebar">
-    <!-- Sidebar Header -->
-    <div class="sidebar-header">
-        <div class="sidebar-logo">
-            <img src="/images/JEVis4_logo.png" alt="JEVis 4 Logo" class="sidebar-logo-icon">
-        </div>
-    </div>
-
     <!-- Sidebar Navigation -->
     <nav class="sidebar-nav">
         <!-- Hauptmenü -->
@@ -112,16 +105,4 @@
         </div>
     </nav>
 
-    <!-- Sidebar Footer with Toggle Button -->
-    <div class="sidebar-footer">
-        <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Navigation umschalten">
-            <svg class="icon-collapse" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-            </svg>
-            <svg class="icon-expand" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
-            </svg>
-            <span class="nav-item-text">Menü einklappen</span>
-        </button>
-    </div>
 </aside>

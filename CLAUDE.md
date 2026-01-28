@@ -99,6 +99,7 @@ The application supports both PostgreSQL (production) and H2 (development).
   - JDBC URL: `jdbc:h2:mem:jevis4`
   - Username: `sa`
   - Password: (empty)
+- Default CLI is PowerShell version 7.5, this is important for local running commands while developing
 
 **Production Mode (PostgreSQL):**
 Uncomment and configure in `application.properties`:

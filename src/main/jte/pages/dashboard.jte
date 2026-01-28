@@ -20,13 +20,13 @@
             <p class="page-description">Konfigurierbare Widgets fuer Ihre PV-Anlagen</p>
         </div>
         <div class="page-actions">
-            <button class="btn btn-outline" onclick="toggleEditMode()">
+            <button class="btn btn-outline" onclick="toggleEditMode()" id="editModeBtn">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
                 <span id="editModeText">Bearbeiten</span>
             </button>
-            <button class="btn btn-primary" onclick="openAddWidgetModal()">
+            <button class="btn btn-primary" onclick="openAddWidgetModal()" id="addWidgetBtn" style="display: none;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -119,6 +119,147 @@
                         <div class="widget-type-desc">Standorte anzeigen</div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Widget Settings Modal -->
+    <div id="widgetSettingsModal" class="modal" style="display: none;">
+        <div class="modal-backdrop" onclick="closeWidgetSettingsModal()"></div>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">Widget-Einstellungen</h3>
+                <button class="modal-close" onclick="closeWidgetSettingsModal()">&times;</button>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="settings-tabs">
+                <button class="settings-tab active" data-tab="general" onclick="switchSettingsTab('general')">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Allgemein
+                </button>
+                <button class="settings-tab" data-tab="datasources" onclick="switchSettingsTab('datasources')" id="tabDatasources">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                    </svg>
+                    Datenquellen
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="settingsWidgetId">
+
+                <!-- Tab: General -->
+                <div class="settings-tab-content active" id="tabContentGeneral">
+                    <div class="form-group">
+                        <label class="form-label">Titel</label>
+                        <input type="text" id="settingsTitle" class="form-control" placeholder="Widget-Titel">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Widget-Typ</label>
+                        <input type="text" id="settingsWidgetType" class="form-control" readonly disabled>
+                    </div>
+                </div>
+
+                <!-- Tab: Datasources -->
+                <div class="settings-tab-content" id="tabContentDatasources">
+                    <!-- Filter Section -->
+                    <div class="sensor-filters">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label class="filter-label">Suche</label>
+                                <input type="text" id="sensorFilterName" class="form-control form-control-sm"
+                                       placeholder="Name suchen..." oninput="filterSensors()">
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Typ</label>
+                                <select id="sensorFilterType" class="form-control form-control-sm" onchange="filterSensors()">
+                                    <option value="">Alle Typen</option>
+                                    @if(sensorsByType != null)
+                                        @for(var entry : sensorsByType.entrySet())
+                                            <option value="${entry.getKey()}">${entry.getKey()}</option>
+                                        @endfor
+                                    @endif
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Standort</label>
+                                <select id="sensorFilterLocation" class="form-control form-control-sm" onchange="filterSensors()">
+                                    <option value="">Alle Standorte</option>
+                                    @if(sensors != null)
+                                        !{var locations = new java.util.HashSet<String>();}
+                                        @for(Sensor sensor : sensors)
+                                            @if(sensor.getLocation() != null && !sensor.getLocation().isEmpty())
+                                                !{locations.add(sensor.getLocation());}
+                                            @endif
+                                        @endfor
+                                        @for(String loc : locations)
+                                            <option value="${loc}">${loc}</option>
+                                        @endfor
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Two Column Layout: Available | Selected -->
+                    <div class="sensor-columns">
+                        <!-- Available Sensors -->
+                        <div class="sensor-column">
+                            <div class="sensor-column-header">
+                                <span>Verfuegbare Sensoren</span>
+                                <span class="sensor-count" id="availableSensorCount">0</span>
+                            </div>
+                            <div class="sensor-list" id="availableSensorList">
+                                @if(sensors != null)
+                                    @for(Sensor sensor : sensors)
+                                        <div class="sensor-item" data-sensor-id="${sensor.getId()}"
+                                             data-name="${sensor.getSensorName()}"
+                                             data-type="${sensor.getMeasurementType()}"
+                                             data-location="${sensor.getLocation() != null ? sensor.getLocation() : ""}"
+                                             data-unit="${sensor.getUnit()}"
+                                             data-code="${sensor.getSensorCode()}"
+                                             onclick="selectSensor(this)">
+                                            <div class="sensor-item-info">
+                                                <span class="sensor-item-name">${sensor.getSensorName()}</span>
+                                                <span class="sensor-item-meta">${sensor.getSensorCode()} - ${sensor.getUnit()}</span>
+                                            </div>
+                                            <span class="sensor-item-type">${sensor.getMeasurementType()}</span>
+                                        </div>
+                                    @endfor
+                                @else
+                                    <p class="text-muted" style="padding: 1rem;">Keine Sensoren verfuegbar</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Selected Sensors -->
+                        <div class="sensor-column">
+                            <div class="sensor-column-header">
+                                <span>Ausgewaehlte Sensoren</span>
+                                <span class="sensor-count" id="selectedSensorCount">0</span>
+                            </div>
+                            <div class="sensor-list" id="selectedSensorList">
+                                <!-- Selected sensors will be added here dynamically -->
+                                <div class="sensor-list-empty" id="selectedSensorEmpty">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                    <span>Sensoren aus der linken Liste auswaehlen</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeWidgetSettingsModal()">Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveWidgetSettings()">Speichern</button>
             </div>
         </div>
     </div>
@@ -327,6 +468,310 @@
             outline-offset: -2px;
         }
 
+        /* Edit Mode Only Actions */
+        .widget-actions .edit-only {
+            display: none;
+        }
+
+        .edit-mode .widget-actions .edit-only {
+            display: inline-flex;
+        }
+
+        /* Modal Footer */
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Modal Large */
+        .modal-lg {
+            max-width: 800px;
+        }
+
+        /* Settings Tabs */
+        .settings-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 1rem;
+            gap: 0.5rem;
+        }
+
+        .settings-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: -1px;
+        }
+
+        .settings-tab:hover {
+            color: var(--text-color);
+        }
+
+        .settings-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .settings-tab svg {
+            flex-shrink: 0;
+        }
+
+        .settings-tab-content {
+            display: none;
+        }
+
+        .settings-tab-content.active {
+            display: block;
+        }
+
+        /* Sensor Filters */
+        .sensor-filters {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: var(--hover-color);
+            border-radius: var(--border-radius);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control-sm {
+            padding: 0.35rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        /* Sensor Columns */
+        .sensor-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            height: 350px;
+        }
+
+        .sensor-column {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .sensor-column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            background: var(--hover-color);
+            font-weight: 500;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sensor-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.1rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        .sensor-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.25rem;
+        }
+
+        .sensor-list-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 1rem;
+            gap: 0.5rem;
+        }
+
+        .sensor-list-empty svg {
+            opacity: 0.5;
+        }
+
+        /* Sensor Item (Available) */
+        .sensor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .sensor-item:hover {
+            background: var(--hover-color);
+        }
+
+        .sensor-item.hidden {
+            display: none;
+        }
+
+        .sensor-item-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .sensor-item-name {
+            font-size: 0.85rem;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sensor-item-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .sensor-item-type {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.4rem;
+            background: var(--border-color);
+            color: var(--text-muted);
+            border-radius: var(--border-radius);
+            white-space: nowrap;
+        }
+
+        /* Selected Sensor Item */
+        .selected-sensor-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--hover-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 0.35rem;
+        }
+
+        .selected-sensor-color {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .selected-sensor-color::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .selected-sensor-color::-webkit-color-swatch {
+            border: none;
+            border-radius: 2px;
+        }
+
+        .selected-sensor-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .selected-sensor-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .selected-sensor-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .selected-sensor-remove {
+            padding: 0.25rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            border-radius: var(--border-radius);
+            line-height: 1;
+        }
+
+        .selected-sensor-remove:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
         /* Leaflet Map fixes */
         .leaflet-container {
             width: 100%;
@@ -361,8 +806,8 @@
                 cellHeight: 80,
                 margin: 8,
                 float: true,
-                disableResize: false,
-                disableDrag: false,
+                disableResize: true,
+                disableDrag: true,
                 animate: true
             });
 
@@ -378,7 +823,10 @@
                 try {
                     var layout = JSON.parse(savedLayout);
                     layout.forEach(function(item) {
-                        createWidget(item.type, item.x, item.y, item.w, item.h, item.title);
+                        createWidget(item.type, item.x, item.y, item.w, item.h, item.title, {
+                            sensorConfigs: item.sensorConfigs || [],
+                            sensorIds: item.sensorIds || []
+                        });
                     });
                     return;
                 } catch(e) {
@@ -404,6 +852,8 @@
                     layout.push({
                         type: w.type,
                         title: w.title,
+                        sensorConfigs: w.sensorConfigs || [],
+                        sensorIds: w.sensorIds || [],
                         x: node.x,
                         y: node.y,
                         w: node.w,
@@ -418,14 +868,25 @@
             editMode = !editMode;
             var container = document.getElementById('dashboardGrid');
             var text = document.getElementById('editModeText');
+            var addBtn = document.getElementById('addWidgetBtn');
+            var editBtn = document.getElementById('editModeBtn');
 
             if (editMode) {
                 container.classList.add('edit-mode');
                 text.textContent = 'Fertig';
-                grid.enable();
+                editBtn.classList.remove('btn-outline');
+                editBtn.classList.add('btn-primary');
+                addBtn.style.display = 'inline-flex';
+                grid.enableMove(true);
+                grid.enableResize(true);
             } else {
                 container.classList.remove('edit-mode');
                 text.textContent = 'Bearbeiten';
+                editBtn.classList.remove('btn-primary');
+                editBtn.classList.add('btn-outline');
+                addBtn.style.display = 'none';
+                grid.enableMove(false);
+                grid.enableResize(false);
                 saveLayout();
             }
         }
@@ -452,21 +913,32 @@
             createWidget(type, 0, 0, 4, 4, titles[type] || 'Widget');
         }
 
-        function createWidget(type, x, y, w, h, title) {
+        function createWidget(type, x, y, w, h, title, config) {
             widgetCounter++;
             var id = 'widget_' + widgetCounter;
+
+            // Default config
+            config = config || {};
+            var sensorConfigs = config.sensorConfigs || [];
+            var sensorIds = config.sensorIds || [];
 
             var content = document.createElement('div');
             content.innerHTML =
                 '<div class="widget-header">' +
-                    '<h4 class="widget-title">' + title + '</h4>' +
+                    '<h4 class="widget-title" data-widget-title>' + title + '</h4>' +
                     '<div class="widget-actions">' +
+                        '<button class="edit-only" onclick="openWidgetSettings(\'' + id + '\')" title="Einstellungen">' +
+                            '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>' +
+                                '<circle cx="12" cy="12" r="3"/>' +
+                            '</svg>' +
+                        '</button>' +
                         '<button onclick="refreshWidget(\'' + id + '\')" title="Aktualisieren">' +
                             '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
                                 '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>' +
                             '</svg>' +
                         '</button>' +
-                        '<button onclick="removeWidget(\'' + id + '\')" title="Entfernen">' +
+                        '<button class="edit-only" onclick="removeWidget(\'' + id + '\')" title="Entfernen">' +
                             '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
                                 '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>' +
                             '</svg>' +
@@ -489,6 +961,8 @@
             widgets[id] = {
                 type: type,
                 title: title,
+                sensorConfigs: sensorConfigs,
+                sensorIds: sensorIds,
                 chart: null,
                 map: null
             };
@@ -506,7 +980,7 @@
             if (type === 'map') {
                 initMapWidget(id, chartDom);
             } else {
-                var chart = echarts.init(chartDom);
+                var chart = JEVisChartTheme.initChart(chartDom);
                 widgets[id].chart = chart;
                 loadWidgetData(id, type);
 
@@ -519,19 +993,37 @@
         }
 
         function loadWidgetData(id, type) {
-            var chart = widgets[id].chart;
+            var w = widgets[id];
+            var chart = w.chart;
             if (!chart) return;
 
             chart.showLoading();
 
             var endpoint = '/dashboard/api/widget/' + (type === 'area' ? 'line' : type);
 
+            // Add sensor IDs to request if available
+            if (w.sensorIds && w.sensorIds.length > 0) {
+                var params = new URLSearchParams();
+                w.sensorIds.forEach(function(sensorId) {
+                    params.append('sensorIds', sensorId);
+                });
+                endpoint += '?' + params.toString();
+            }
+
+            // Build color map from sensorConfigs
+            var colorMap = {};
+            if (w.sensorConfigs && w.sensorConfigs.length > 0) {
+                w.sensorConfigs.forEach(function(config) {
+                    colorMap[config.id] = config.color;
+                });
+            }
+
             fetch(endpoint)
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     chart.hideLoading();
-                    var option = getChartOption(type, data);
-                    chart.setOption(option);
+                    var option = getChartOption(type, data, colorMap);
+                    chart.setOption(option, true);
                 })
                 .catch(function(err) {
                     chart.hideLoading();
@@ -539,34 +1031,45 @@
                 });
         }
 
-        function getChartOption(type, data) {
+        function getChartOption(type, data, colorMap) {
             switch(type) {
                 case 'line':
-                    return getLineOption(data, false);
+                    return getLineOption(data, false, colorMap);
                 case 'area':
-                    return getLineOption(data, true);
+                    return getLineOption(data, true, colorMap);
                 case 'bar':
-                    return getBarOption(data);
+                    return getBarOption(data, colorMap);
                 case 'radial':
-                    return getRadialOption(data);
+                    return getRadialOption(data, colorMap);
                 case 'pie':
-                    return getPieOption(data);
+                    return getPieOption(data, colorMap);
                 case 'gauge':
-                    return getGaugeOption(data);
+                    return getGaugeOption(data, colorMap);
                 default:
                     return {};
             }
         }
 
-        function getLineOption(data, isArea) {
-            var series = data.series.map(function(s) {
+        function getLineOption(data, isArea, colorMap) {
+            var palette = JEVisChartTheme.getPalette();
+
+            var series = data.series.map(function(s, index) {
+                // Use color from colorMap if available, otherwise from palette
+                var color = (colorMap && colorMap[s.sensorId]) || palette[index % palette.length];
+
                 return {
                     name: s.name,
                     type: 'line',
                     smooth: true,
                     symbol: 'none',
                     data: s.data,
-                    areaStyle: isArea ? { opacity: 0.3 } : null
+                    itemStyle: {
+                        color: color
+                    },
+                    lineStyle: {
+                        color: color
+                    },
+                    areaStyle: isArea ? { opacity: 0.3, color: color } : null
                 };
             });
 
@@ -587,7 +1090,13 @@
             };
         }
 
-        function getBarOption(data) {
+        function getBarOption(data, colorMap) {
+            var palette = JEVisChartTheme.getPalette();
+
+            // If we have colorMap with values, use them for bar coloring
+            var hasCustomColors = colorMap && Object.keys(colorMap).length > 0;
+            var customColors = hasCustomColors ? Object.values(colorMap) : null;
+
             return {
                 tooltip: { trigger: 'axis' },
                 grid: { left: 50, right: 20, top: 20, bottom: 40 },
@@ -601,18 +1110,20 @@
                     type: 'bar',
                     data: data.values,
                     itemStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                            { offset: 0, color: '#3b82f6' },
-                            { offset: 1, color: '#1d4ed8' }
-                        ])
+                        color: customColors ? customColors[0] : JEVisChartTheme.createBarGradient()
                     }
                 }]
             };
         }
 
-        function getRadialOption(data) {
+        function getRadialOption(data, colorMap) {
             var angleData = data.data.map(function(d) { return d.name; });
             var radiusData = data.data.map(function(d) { return d.value; });
+            var palette = JEVisChartTheme.getPalette();
+
+            // Use custom colors if available
+            var customColors = (colorMap && Object.keys(colorMap).length > 0) ? Object.values(colorMap) : null;
+            var useColors = customColors || palette;
 
             return {
                 polar: { radius: [30, '70%'] },
@@ -629,16 +1140,20 @@
                     coordinateSystem: 'polar',
                     itemStyle: {
                         color: function(params) {
-                            var colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-                            return colors[params.dataIndex % colors.length];
+                            return useColors[params.dataIndex % useColors.length];
                         }
                     }
                 }]
             };
         }
 
-        function getPieOption(data) {
+        function getPieOption(data, colorMap) {
+            var palette = JEVisChartTheme.getPalette();
+            var customColors = (colorMap && Object.keys(colorMap).length > 0) ? Object.values(colorMap) : null;
+            var useColors = customColors || palette;
+
             return {
+                color: useColors,
                 tooltip: { trigger: 'item' },
                 legend: { bottom: 10, left: 'center' },
                 series: [{
@@ -660,7 +1175,11 @@
             };
         }
 
-        function getGaugeOption(data) {
+        function getGaugeOption(data, colorMap) {
+            var ui = JEVisChartTheme.getUIColors();
+            var customColors = (colorMap && Object.keys(colorMap).length > 0) ? Object.values(colorMap) : null;
+            var gaugeColor = (customColors && customColors[0]) || ui.gaugeProgress;
+
             return {
                 series: [{
                     type: 'gauge',
@@ -670,7 +1189,7 @@
                     max: data.max || 100,
                     splitNumber: 5,
                     itemStyle: {
-                        color: '#3b82f6'
+                        color: gaugeColor
                     },
                     progress: {
                         show: true,
@@ -678,7 +1197,10 @@
                     },
                     pointer: { show: false },
                     axisLine: {
-                        lineStyle: { width: 20 }
+                        lineStyle: {
+                            width: 20,
+                            color: [[1, ui.gaugeTrack]]
+                        }
                     },
                     axisTick: { show: false },
                     splitLine: { show: false },
@@ -686,13 +1208,14 @@
                     title: {
                         offsetCenter: [0, '30%'],
                         fontSize: 14,
-                        color: '#666'
+                        color: ui.legendText
                     },
                     detail: {
                         valueAnimation: true,
                         fontSize: 28,
                         fontWeight: 'bold',
                         offsetCenter: [0, '-10%'],
+                        color: ui.tooltipText,
                         formatter: function(v) {
                             return v.toFixed(1) + (data.unit ? ' ' + data.unit : '');
                         }
@@ -713,7 +1236,8 @@
                     }).addTo(map);
 
                     data.locations.forEach(function(loc) {
-                        var color = loc.status === 'online' ? '#10b981' : '#f59e0b';
+                        var semantic = JEVisChartTheme.getSemanticColors();
+                        var color = loc.status === 'online' ? semantic.statusOnline : semantic.statusWarning;
                         var marker = L.circleMarker([loc.lat, loc.lng], {
                             radius: 10,
                             fillColor: color,
@@ -764,6 +1288,249 @@
             }
 
             saveLayout();
+        }
+
+        // Widget Settings Functions
+        var selectedSensorsData = []; // Array of {id, name, code, unit, color}
+
+        function openWidgetSettings(id) {
+            var w = widgets[id];
+            if (!w) return;
+
+            document.getElementById('settingsWidgetId').value = id;
+            document.getElementById('settingsTitle').value = w.title;
+
+            // Set widget type display
+            var typeNames = {
+                'line': 'Liniendiagramm',
+                'area': 'Flaechendiagramm',
+                'bar': 'Balkendiagramm',
+                'radial': 'Radiales Diagramm',
+                'pie': 'Kreisdiagramm',
+                'gauge': 'Tachometer',
+                'map': 'Karte'
+            };
+            document.getElementById('settingsWidgetType').value = typeNames[w.type] || w.type;
+
+            // Show/hide datasources tab based on widget type
+            var supportsSensors = ['line', 'area', 'bar', 'radial'].indexOf(w.type) !== -1;
+            document.getElementById('tabDatasources').style.display = supportsSensors ? 'flex' : 'none';
+
+            // Reset filters
+            document.getElementById('sensorFilterName').value = '';
+            document.getElementById('sensorFilterType').value = '';
+            document.getElementById('sensorFilterLocation').value = '';
+
+            // Reset selected sensors
+            selectedSensorsData = [];
+
+            // Load saved sensor configurations
+            if (w.sensorConfigs && w.sensorConfigs.length > 0) {
+                w.sensorConfigs.forEach(function(config) {
+                    selectedSensorsData.push({
+                        id: config.id,
+                        name: config.name,
+                        code: config.code || '',
+                        unit: config.unit || '',
+                        color: config.color
+                    });
+                });
+            } else if (w.sensorIds && w.sensorIds.length > 0) {
+                // Migrate from old format
+                w.sensorIds.forEach(function(sensorId, index) {
+                    var sensorEl = document.querySelector('#availableSensorList .sensor-item[data-sensor-id="' + sensorId + '"]');
+                    if (sensorEl) {
+                        selectedSensorsData.push({
+                            id: sensorId,
+                            name: sensorEl.dataset.name,
+                            code: sensorEl.dataset.code,
+                            unit: sensorEl.dataset.unit,
+                            color: JEVisChartTheme.getSeriesColor(index)
+                        });
+                    }
+                });
+            }
+
+            // Render selected sensors and update available list
+            renderSelectedSensors();
+            filterSensors();
+            updateSensorCounts();
+
+            // Switch to general tab
+            switchSettingsTab('general');
+
+            document.getElementById('widgetSettingsModal').style.display = 'flex';
+        }
+
+        function closeWidgetSettingsModal() {
+            document.getElementById('widgetSettingsModal').style.display = 'none';
+        }
+
+        function switchSettingsTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.settings-tab').forEach(function(tab) {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+
+            // Update tab content
+            document.querySelectorAll('.settings-tab-content').forEach(function(content) {
+                content.classList.remove('active');
+            });
+
+            if (tabName === 'general') {
+                document.getElementById('tabContentGeneral').classList.add('active');
+            } else if (tabName === 'datasources') {
+                document.getElementById('tabContentDatasources').classList.add('active');
+            }
+        }
+
+        function filterSensors() {
+            var nameFilter = document.getElementById('sensorFilterName').value.toLowerCase();
+            var typeFilter = document.getElementById('sensorFilterType').value;
+            var locationFilter = document.getElementById('sensorFilterLocation').value;
+
+            var visibleCount = 0;
+            document.querySelectorAll('#availableSensorList .sensor-item').forEach(function(item) {
+                var name = (item.dataset.name || '').toLowerCase();
+                var type = item.dataset.type || '';
+                var location = item.dataset.location || '';
+                var id = item.dataset.sensorId;
+
+                // Check if already selected
+                var isSelected = selectedSensorsData.some(function(s) { return s.id === id; });
+
+                var matchesName = !nameFilter || name.indexOf(nameFilter) !== -1;
+                var matchesType = !typeFilter || type === typeFilter;
+                var matchesLocation = !locationFilter || location === locationFilter;
+
+                var visible = matchesName && matchesType && matchesLocation && !isSelected;
+                item.classList.toggle('hidden', !visible);
+
+                if (visible) visibleCount++;
+            });
+
+            document.getElementById('availableSensorCount').textContent = visibleCount;
+        }
+
+        function selectSensor(element) {
+            var id = element.dataset.sensorId;
+            var name = element.dataset.name;
+            var code = element.dataset.code;
+            var unit = element.dataset.unit;
+
+            // Get next color from theme
+            var colorIndex = selectedSensorsData.length;
+            var color = JEVisChartTheme.getSeriesColor(colorIndex);
+
+            selectedSensorsData.push({
+                id: id,
+                name: name,
+                code: code,
+                unit: unit,
+                color: color
+            });
+
+            renderSelectedSensors();
+            filterSensors();
+            updateSensorCounts();
+        }
+
+        function removeSensor(sensorId) {
+            selectedSensorsData = selectedSensorsData.filter(function(s) {
+                return s.id !== sensorId;
+            });
+
+            renderSelectedSensors();
+            filterSensors();
+            updateSensorCounts();
+        }
+
+        function updateSensorColor(sensorId, newColor) {
+            var sensor = selectedSensorsData.find(function(s) { return s.id === sensorId; });
+            if (sensor) {
+                sensor.color = newColor;
+            }
+        }
+
+        function renderSelectedSensors() {
+            var container = document.getElementById('selectedSensorList');
+            var emptyState = document.getElementById('selectedSensorEmpty');
+
+            // Clear existing items except empty state
+            container.querySelectorAll('.selected-sensor-item').forEach(function(item) {
+                item.remove();
+            });
+
+            if (selectedSensorsData.length === 0) {
+                emptyState.style.display = 'flex';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            selectedSensorsData.forEach(function(sensor) {
+                var item = document.createElement('div');
+                item.className = 'selected-sensor-item';
+                item.dataset.sensorId = sensor.id;
+
+                item.innerHTML =
+                    '<input type="color" class="selected-sensor-color" value="' + sensor.color + '" ' +
+                           'onchange="updateSensorColor(\'' + sensor.id + '\', this.value)" title="Farbe aendern">' +
+                    '<div class="selected-sensor-info">' +
+                        '<span class="selected-sensor-name">' + sensor.name + '</span>' +
+                        '<span class="selected-sensor-meta">' + sensor.code + ' - ' + sensor.unit + '</span>' +
+                    '</div>' +
+                    '<button class="selected-sensor-remove" onclick="removeSensor(\'' + sensor.id + '\')" title="Entfernen">' +
+                        '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>' +
+                        '</svg>' +
+                    '</button>';
+
+                container.appendChild(item);
+            });
+        }
+
+        function updateSensorCounts() {
+            document.getElementById('selectedSensorCount').textContent = selectedSensorsData.length;
+        }
+
+        function saveWidgetSettings() {
+            var id = document.getElementById('settingsWidgetId').value;
+            var w = widgets[id];
+            if (!w) return;
+
+            // Update title
+            var newTitle = document.getElementById('settingsTitle').value.trim() || 'Widget';
+            w.title = newTitle;
+
+            // Update DOM title
+            var el = document.getElementById(id);
+            if (el) {
+                var titleEl = el.querySelector('[data-widget-title]');
+                if (titleEl) titleEl.textContent = newTitle;
+            }
+
+            // Update sensor configurations (with individual colors)
+            w.sensorConfigs = selectedSensorsData.map(function(s) {
+                return {
+                    id: s.id,
+                    name: s.name,
+                    code: s.code,
+                    unit: s.unit,
+                    color: s.color
+                };
+            });
+
+            // Also keep sensorIds for backward compatibility
+            w.sensorIds = selectedSensorsData.map(function(s) { return s.id; });
+
+            // Reload chart with new settings
+            if (w.chart && w.type !== 'map') {
+                loadWidgetData(id, w.type);
+            }
+
+            saveLayout();
+            closeWidgetSettingsModal();
         }
     </script>
     `

@@ -29,6 +29,7 @@
 
     <link rel="stylesheet" href="/css/theme.css">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="/js/chart-theme-adapter.js"></script>
     <script>
         // Configure htmx to send CSRF token with all requests
         document.addEventListener('DOMContentLoaded', function() {
@@ -44,16 +45,16 @@
 </head>
 <body>
     <div class="app-layout">
-        <!-- Sidebar Navigation -->
-        @template.components.sidebar(currentPage = currentPage)
+        <!-- Top Header (full width) -->
+        @template.components.header(username = username, _csrf = _csrf)
 
-        <!-- Main Wrapper (Header + Content) -->
-        <div class="main-wrapper" id="mainWrapper">
-            <!-- Top Header -->
-            @template.components.header(username = username, _csrf = _csrf)
+        <!-- Content Wrapper (Sidebar + Main) -->
+        <div class="content-wrapper">
+            <!-- Sidebar Navigation -->
+            @template.components.sidebar(currentPage = currentPage)
 
             <!-- Main Content -->
-            <main class="main-content">
+            <main class="main-content" id="mainWrapper">
                 ${content}
             </main>
         </div>
@@ -79,29 +80,27 @@
         // Sidebar Toggle Functionality
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            const mainWrapper = document.getElementById('mainWrapper');
-            sidebar.classList.toggle('collapsed');
-            mainWrapper.classList.toggle('sidebar-collapsed');
 
-            // Save state to localStorage
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
+            // On mobile, toggle open class instead of collapsed
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                // Save state to localStorage
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+            }
         }
 
         // Restore sidebar state on page load
         document.addEventListener('DOMContentLoaded', function() {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
-                document.getElementById('sidebar').classList.add('collapsed');
-                document.getElementById('mainWrapper').classList.add('sidebar-collapsed');
+            if (window.innerWidth > 768) {
+                const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                if (isCollapsed) {
+                    document.getElementById('sidebar').classList.add('collapsed');
+                }
             }
         });
-
-        // Mobile sidebar toggle
-        function toggleMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('open');
-        }
 
         // User Menu Dropdown
         function toggleUserMenu() {

@@ -1,8 +1,9 @@
 package gg.jte.generated.ondemand.pages;
+import org.springframework.security.web.csrf.CsrfToken;
 public final class JtesensorsGenerated {
 	public static final String JTE_NAME = "pages/sensors.jte";
-	public static final int[] JTE_LINE_INFO = {0,0,0,0,2,2,7,7,21,68,78,117,117,117,118,118,118,0,0,0,0};
-	public static void render(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, String username) {
+	public static final int[] JTE_LINE_INFO = {0,0,2,2,2,5,5,11,11,25,72,82,121,121,121,122,122,122,2,3,3,3,3};
+	public static void render(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, String username, CsrfToken _csrf) {
 		jteOutput.writeContent("\n");
 		gg.jte.generated.ondemand.layout.JteappGenerated.render(jteOutput, jteHtmlInterceptor, "Messpunkte", username, "sensors", new gg.jte.html.HtmlContent() {
 			public void writeTo(gg.jte.html.HtmlTemplateOutput jteOutput) {
@@ -11,11 +12,12 @@ public final class JtesensorsGenerated {
 				jteOutput.writeContent("\n        <div class=\"card\">\n            <div id=\"sensors-table-container\"\n                 hx-get=\"/sensors/table\"\n                 hx-trigger=\"load\"\n                 hx-swap=\"innerHTML\">\n                <div class=\"loading-spinner\">Lade Daten...</div>\n            </div>\n        </div>\n\n        ");
 				jteOutput.writeContent("\n        <div id=\"modal-container\"></div>\n\n        <style>\n            .filter-row {\n                display: flex;\n                gap: var(--spacing-lg);\n                flex-wrap: wrap;\n                align-items: flex-end;\n            }\n            .filter-group {\n                flex: 1;\n                min-width: 200px;\n            }\n            .filter-group label {\n                display: block;\n                margin-bottom: var(--spacing-sm);\n                font-weight: 500;\n                font-size: var(--font-size-sm);\n            }\n            .filter-actions {\n                flex: 0 0 auto;\n                min-width: auto;\n            }\n            .loading-spinner {\n                text-align: center;\n                padding: var(--spacing-xl);\n                color: var(--text-secondary);\n            }\n        </style>\n\n        <script>\n            function resetFilters() {\n                document.getElementById('search').value = '';\n                document.getElementById('type').value = '';\n                document.getElementById('status').value = '';\n                htmx.trigger('#search', 'keyup');\n            }\n        </script>\n    ");
 			}
-		}, null);
+		}, _csrf);
 		jteOutput.writeContent("\n");
 	}
 	public static void renderMap(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, java.util.Map<String, Object> params) {
 		String username = (String)params.get("username");
-		render(jteOutput, jteHtmlInterceptor, username);
+		CsrfToken _csrf = (CsrfToken)params.getOrDefault("_csrf", null);
+		render(jteOutput, jteHtmlInterceptor, username, _csrf);
 	}
 }

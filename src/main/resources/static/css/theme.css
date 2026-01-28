@@ -10,9 +10,14 @@
     --danger-color: #ef4444;         /* Red - errors */
     --background: #f9fafb;           /* Light gray background */
     --surface: #ffffff;              /* White surface */
+    --card-bg: var(--surface);       /* Card/Modal background */
     --text-primary: #111827;         /* Dark text */
     --text-secondary: #6b7280;       /* Gray text */
+    --text-color: var(--text-primary);   /* Alias for text-primary */
+    --text-muted: var(--text-secondary); /* Alias for text-secondary */
     --border-color: #e5e7eb;         /* Light border */
+    --hover-color: #f3f4f6;          /* Hover background */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
@@ -29,6 +34,8 @@
     --radius-md: 0.375rem;
     --radius-lg: 0.5rem;
     --radius-xl: 0.75rem;
+    --border-radius: var(--radius-md);    /* Alias */
+    --border-radius-lg: var(--radius-lg); /* Alias */
 
     /* Typography */
     --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -38,6 +45,55 @@
     --font-size-xl: 1.25rem;
     --font-size-2xl: 1.5rem;
     --font-size-3xl: 1.875rem;
+
+    /* ================================================
+       CHART COLOR SYSTEM
+       ================================================ */
+
+    /* Tier 1: 10 Base Chart Colors */
+    --chart-color-1: #3b82f6;   /* Blue */
+    --chart-color-2: #10b981;   /* Emerald */
+    --chart-color-3: #f59e0b;   /* Amber */
+    --chart-color-4: #ef4444;   /* Red */
+    --chart-color-5: #8b5cf6;   /* Violet */
+    --chart-color-6: #06b6d4;   /* Cyan */
+    --chart-color-7: #ec4899;   /* Pink */
+    --chart-color-8: #84cc16;   /* Lime */
+    --chart-color-9: #f97316;   /* Orange */
+    --chart-color-10: #6366f1;  /* Indigo */
+
+    /* Tier 2: Semantic Chart Tokens */
+    --chart-success: var(--chart-color-2);
+    --chart-warning: var(--chart-color-3);
+    --chart-danger: var(--chart-color-4);
+    --chart-info: var(--chart-color-1);
+    --chart-neutral: #6b7280;
+
+    /* Status Colors */
+    --chart-status-online: var(--chart-color-2);
+    --chart-status-offline: var(--chart-color-4);
+    --chart-status-warning: var(--chart-color-3);
+
+    /* Tier 3: Chart UI Tokens */
+    --chart-background: transparent;
+    --chart-grid-line: var(--border-color);
+    --chart-axis-line: var(--text-secondary);
+    --chart-axis-label: var(--text-secondary);
+    --chart-tooltip-bg: var(--surface);
+    --chart-tooltip-border: var(--border-color);
+    --chart-tooltip-text: var(--text-primary);
+    --chart-legend-text: var(--text-secondary);
+
+    /* Bar/Gradient Tokens */
+    --chart-bar-gradient-start: var(--chart-color-1);
+    --chart-bar-gradient-end: #1d4ed8;
+
+    /* Gauge Tokens */
+    --chart-gauge-progress: var(--chart-color-1);
+    --chart-gauge-track: var(--border-color);
+
+    /* Fill Opacity */
+    --chart-fill-opacity: 0.3;
 }
 
 /* Reset & Base Styles */
@@ -361,13 +417,20 @@ select:disabled {
 }
 
 /* ========================================
-   Application Layout (Sidebar + Header + Main)
+   Application Layout (Header on top, Sidebar + Main below)
    ======================================== */
 
 .app-layout {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
     background-color: var(--background);
+}
+
+/* Content Wrapper (Sidebar + Main) */
+.content-wrapper {
+    display: flex;
+    flex: 1;
 }
 
 /* Sidebar Navigation */
@@ -377,40 +440,17 @@ select:disabled {
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
     transition: width 0.3s ease;
-    z-index: 100;
+    z-index: 50;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .sidebar.collapsed {
     width: 70px;
-}
-
-.sidebar-header {
-    padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 64px;
-    min-height: 64px;
-}
-
-.sidebar-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sidebar-logo-icon {
-    height: 48px;
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
 }
 
 .sidebar-nav {
@@ -461,6 +501,7 @@ select:disabled {
 .sidebar.collapsed .nav-item {
     justify-content: center;
     padding: var(--spacing-md);
+    gap: 0;
 }
 
 .nav-item:hover {
@@ -541,20 +582,7 @@ select:disabled {
     flex-shrink: 0;
 }
 
-/* Main Content Area */
-.main-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-left: 260px;
-    transition: margin-left 0.3s ease;
-}
-
-.main-wrapper.sidebar-collapsed {
-    margin-left: 70px;
-}
-
-/* Top Header */
+/* Top Header (full width) */
 .app-header {
     height: 64px;
     background-color: var(--surface);
@@ -562,40 +590,52 @@ select:disabled {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 var(--spacing-xl);
+    padding: 0;
+    padding-right: var(--spacing-xl);
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 100;
+    flex-shrink: 0;
 }
 
 .header-left {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: 0;
 }
 
-.header-toggle {
-    display: none;
+/* Toggle button container - aligned with collapsed sidebar icons (centered in 70px) */
+.sidebar-toggle-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     cursor: pointer;
-    padding: var(--spacing-sm);
+    width: 70px;
+    height: 64px;
+    margin-left: 0;
     color: var(--text-secondary);
-    border-radius: var(--radius-md);
     transition: all 0.2s;
+    flex-shrink: 0;
 }
 
-.header-toggle:hover {
+.sidebar-toggle-header:hover {
     background-color: var(--background);
     color: var(--text-primary);
 }
 
 .header-logo {
-    display: none;
+    display: flex;
     align-items: center;
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    color: var(--primary-color);
+    text-decoration: none;
+    padding-left: var(--spacing-md);
+}
+
+.header-logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
 }
 
 .header-right {
@@ -735,6 +775,13 @@ select:disabled {
     flex: 1;
     padding: var(--spacing-xl);
     overflow-y: auto;
+    min-width: 0;
+    transition: margin-left 0.3s ease;
+}
+
+/* When sidebar is collapsed */
+.sidebar.collapsed + .main-content {
+    /* Main content automatically expands */
 }
 
 .page-header {
@@ -756,8 +803,13 @@ select:disabled {
 /* Responsive Design */
 @media (max-width: 768px) {
     .sidebar {
+        position: fixed;
+        left: 0;
+        top: 64px;
+        bottom: 0;
         transform: translateX(-260px);
         width: 260px;
+        z-index: 100;
     }
 
     .sidebar.collapsed {
@@ -770,23 +822,7 @@ select:disabled {
         width: 260px;
     }
 
-    .main-wrapper {
-        margin-left: 0;
-    }
-
-    .main-wrapper.sidebar-collapsed {
-        margin-left: 0;
-    }
-
-    .header-toggle {
-        display: flex;
-    }
-
-    .header-logo {
-        display: block;
-    }
-
-    .sidebar-logo {
+    .sidebar-toggle-header {
         display: flex;
     }
 
@@ -800,6 +836,10 @@ select:disabled {
 
     .main-content {
         padding: var(--spacing-md);
+    }
+
+    .header-logo-img {
+        height: 32px;
     }
 }
 
@@ -817,9 +857,28 @@ select:disabled {
     --danger-color: #ef4444;
     --background: #1f2937;
     --surface: #111827;
+    --card-bg: #1f2937;
     --text-primary: #f9fafb;
     --text-secondary: #9ca3af;
     --border-color: #374151;
+    --hover-color: #374151;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+
+    /* Chart Colors - Brighter for dark backgrounds */
+    --chart-color-1: #60a5fa;
+    --chart-color-2: #34d399;
+    --chart-color-3: #fbbf24;
+    --chart-color-4: #f87171;
+    --chart-color-5: #a78bfa;
+    --chart-color-6: #22d3ee;
+    --chart-color-7: #f472b6;
+    --chart-color-8: #a3e635;
+    --chart-color-9: #fb923c;
+    --chart-color-10: #818cf8;
+    --chart-neutral: #9ca3af;
+    --chart-bar-gradient-end: #3b82f6;
 }
 
 /* Blue Theme */
@@ -835,6 +894,19 @@ select:disabled {
     --text-primary: #0c4a6e;
     --text-secondary: #64748b;
     --border-color: #bae6fd;
+
+    /* Chart Colors - Sky/Cyan palette */
+    --chart-color-1: #0ea5e9;
+    --chart-color-2: #06b6d4;
+    --chart-color-3: #f59e0b;
+    --chart-color-4: #ef4444;
+    --chart-color-5: #6366f1;
+    --chart-color-6: #14b8a6;
+    --chart-color-7: #ec4899;
+    --chart-color-8: #22c55e;
+    --chart-color-9: #f97316;
+    --chart-color-10: #8b5cf6;
+    --chart-bar-gradient-end: #0284c7;
 }
 
 /* Green (PV-optimized) Theme */
@@ -850,6 +922,19 @@ select:disabled {
     --text-primary: #064e3b;
     --text-secondary: #6b7280;
     --border-color: #bbf7d0;
+
+    /* Chart Colors - Green/Nature palette */
+    --chart-color-1: #10b981;
+    --chart-color-2: #22c55e;
+    --chart-color-3: #fbbf24;
+    --chart-color-4: #ef4444;
+    --chart-color-5: #06b6d4;
+    --chart-color-6: #84cc16;
+    --chart-color-7: #f97316;
+    --chart-color-8: #14b8a6;
+    --chart-color-9: #8b5cf6;
+    --chart-color-10: #3b82f6;
+    --chart-bar-gradient-end: #059669;
 }
 
 /* Ocean Theme */
@@ -865,6 +950,19 @@ select:disabled {
     --text-primary: #164e63;
     --text-secondary: #64748b;
     --border-color: #a5f3fc;
+
+    /* Chart Colors - Ocean/Teal palette */
+    --chart-color-1: #0891b2;
+    --chart-color-2: #06b6d4;
+    --chart-color-3: #14b8a6;
+    --chart-color-4: #ef4444;
+    --chart-color-5: #6366f1;
+    --chart-color-6: #22d3ee;
+    --chart-color-7: #f472b6;
+    --chart-color-8: #10b981;
+    --chart-color-9: #f59e0b;
+    --chart-color-10: #8b5cf6;
+    --chart-bar-gradient-end: #0e7490;
 }
 
 /* Sunset Theme */
@@ -880,4 +978,17 @@ select:disabled {
     --text-primary: #7c2d12;
     --text-secondary: #78716c;
     --border-color: #fed7aa;
+
+    /* Chart Colors - Warm/Sunset palette */
+    --chart-color-1: #f97316;
+    --chart-color-2: #fb923c;
+    --chart-color-3: #fbbf24;
+    --chart-color-4: #dc2626;
+    --chart-color-5: #8b5cf6;
+    --chart-color-6: #f59e0b;
+    --chart-color-7: #ec4899;
+    --chart-color-8: #10b981;
+    --chart-color-9: #ef4444;
+    --chart-color-10: #6366f1;
+    --chart-bar-gradient-end: #ea580c;
 }
