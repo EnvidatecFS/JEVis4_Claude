@@ -73,7 +73,7 @@
     <script>
         // Theme Management - Load immediately to prevent flash
         (function() {
-            const savedTheme = localStorage.getItem('selectedTheme') || 'light';
+            const savedTheme = localStorage.getItem('selectedTheme') || 'sun-charge';
             document.documentElement.setAttribute('data-theme', savedTheme);
         })();
 

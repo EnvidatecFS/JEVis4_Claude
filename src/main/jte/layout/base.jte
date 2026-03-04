@@ -4,7 +4,7 @@
 @param Content content
 
 <!DOCTYPE html>
-<html lang="de" data-theme="dark">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,6 +18,13 @@
 
     <link rel="stylesheet" href="/css/theme.css">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+        // Load saved theme immediately to prevent flash
+        (function() {
+            const savedTheme = localStorage.getItem('selectedTheme') || 'sun-charge';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
 </head>
 <body>
     ${content}

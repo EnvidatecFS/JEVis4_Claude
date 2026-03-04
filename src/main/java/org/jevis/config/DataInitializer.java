@@ -1,8 +1,7 @@
 package org.jevis.config;
 
-import org.jevis.model.Measurement;
-import org.jevis.model.MeasurementId;
-import org.jevis.model.Sensor;
+import org.jevis.model.*;
+import org.jevis.repository.CsrActionRepository;
 import org.jevis.repository.MeasurementRepository;
 import org.jevis.repository.SensorRepository;
 import org.slf4j.Logger;
@@ -32,11 +31,13 @@ public class DataInitializer implements CommandLineRunner {
 
     private final SensorRepository sensorRepository;
     private final MeasurementRepository measurementRepository;
+    private final CsrActionRepository csrActionRepository;
     private final Random random = new Random(42); // Fixed seed for reproducible data
 
-    public DataInitializer(SensorRepository sensorRepository, MeasurementRepository measurementRepository) {
+    public DataInitializer(SensorRepository sensorRepository, MeasurementRepository measurementRepository, CsrActionRepository csrActionRepository) {
         this.sensorRepository = sensorRepository;
         this.measurementRepository = measurementRepository;
+        this.csrActionRepository = csrActionRepository;
     }
 
     @Override
@@ -49,6 +50,9 @@ public class DataInitializer implements CommandLineRunner {
             log.info("Created {} sensors", sensors.size());
 
             initializeMeasurements(sensors);
+
+            initializeCsrActions();
+
             log.info("Database initialization complete");
         } else {
             log.debug("Database already initialized with {} sensors", sensorRepository.count());
@@ -230,5 +234,181 @@ public class DataInitializer implements CommandLineRunner {
         double cloudFactor = 0.85 + random.nextDouble() * 0.15;
 
         return curveValue * maxValue * cloudFactor;
+    }
+
+    private void initializeCsrActions() {
+        if (csrActionRepository.count() > 0) {
+            return;
+        }
+
+        List<CsrAction> actions = new ArrayList<>();
+
+        // Environmental actions
+        actions.add(createCsrAction(
+            "CO2-Emissionen um 30% reduzieren",
+            "Reduktion der betrieblichen CO2-Emissionen durch Optimierung der Energieeffizienz und verstärkten Einsatz erneuerbarer Energien.",
+            CsrCategory.ENVIRONMENTAL,
+            CsrStatus.IN_PROGRESS,
+            "Maria Schmidt",
+            LocalDate.now().plusMonths(6),
+            45,
+            "HIGH",
+            "Erwartete Einsparung von 1.500 Tonnen CO2 pro Jahr",
+            "admin"
+        ));
+
+        actions.add(createCsrAction(
+            "Wasserverbrauch optimieren",
+            "Implementierung eines Wassermanagement-Systems zur Reduzierung des Wasserverbrauchs um 20%.",
+            CsrCategory.ENVIRONMENTAL,
+            CsrStatus.PLANNED,
+            "Thomas Weber",
+            LocalDate.now().plusMonths(9),
+            0,
+            "MEDIUM",
+            "Einsparung von 50.000 Litern Wasser pro Monat",
+            "admin"
+        ));
+
+        actions.add(createCsrAction(
+            "Recycling-Quote auf 90% erhöhen",
+            "Einführung eines umfassenden Abfalltrennungssystems und Schulung der Mitarbeiter.",
+            CsrCategory.ENVIRONMENTAL,
+            CsrStatus.COMPLETED,
+            "Lisa Müller",
+            LocalDate.now().minusMonths(1),
+            100,
+            "MEDIUM",
+            "Reduktion der Restmüllmenge um 60%",
+            "admin"
+        ));
+
+        // Social actions
+        actions.add(createCsrAction(
+            "Diversity & Inclusion Programm",
+            "Entwicklung und Umsetzung eines umfassenden D&I-Programms zur Förderung von Vielfalt und Inklusion.",
+            CsrCategory.SOCIAL,
+            CsrStatus.IN_PROGRESS,
+            "Sandra Braun",
+            LocalDate.now().plusMonths(3),
+            60,
+            "HIGH",
+            "Steigerung der Mitarbeiterzufriedenheit um 25%",
+            "admin"
+        ));
+
+        actions.add(createCsrAction(
+            "Ausbildungsprogramm für Jugendliche",
+            "Etablierung eines Ausbildungsprogramms für benachteiligte Jugendliche in der Region.",
+            CsrCategory.SOCIAL,
+            CsrStatus.PLANNED,
+            "Michael Hoffmann",
+            LocalDate.now().plusMonths(4),
+            10,
+            "HIGH",
+            "Ausbildung von 15 Jugendlichen pro Jahr",
+            "admin"
+        ));
+
+        actions.add(createCsrAction(
+            "Gesundheitsförderung am Arbeitsplatz",
+            "Einführung von Gesundheitsprogrammen wie Fitnesskurse und ergonomische Arbeitsplatzgestaltung.",
+            CsrCategory.SOCIAL,
+            CsrStatus.ON_HOLD,
+            "Anna Fischer",
+            LocalDate.now().plusMonths(2),
+            30,
+            "MEDIUM",
+            "Reduktion der Krankheitstage um 15%",
+            "admin"
+        ));
+
+        // Governance actions
+        actions.add(createCsrAction(
+            "Transparente Lieferkettenüberwachung",
+            "Implementierung eines Systems zur Überwachung und Dokumentation der Lieferkette hinsichtlich Nachhaltigkeit.",
+            CsrCategory.GOVERNANCE,
+            CsrStatus.IN_PROGRESS,
+            "Peter Schäfer",
+            LocalDate.now().plusMonths(8),
+            35,
+            "HIGH",
+            "100% Transparenz über Tier-1 und Tier-2 Lieferanten",
+            "admin"
+        ));
+
+        actions.add(createCsrAction(
+            "Ethik-Richtlinien aktualisieren",
+            "Überarbeitung und Erweiterung der unternehmensweiten Ethik-Richtlinien.",
+            CsrCategory.GOVERNANCE,
+            CsrStatus.COMPLETED,
+            "Dr. Julia Becker",
+            LocalDate.now().minusWeeks(2),
+            100,
+            "MEDIUM",
+            "Klare Richtlinien für alle Mitarbeiter",
+            "admin"
+        ));
+
+        // Economic actions
+        actions.add(createCsrAction(
+            "Regionale Lieferanten fördern",
+            "Steigerung des Anteils regionaler Lieferanten auf 50% zur Stärkung der lokalen Wirtschaft.",
+            CsrCategory.ECONOMIC,
+            CsrStatus.IN_PROGRESS,
+            "Klaus Richter",
+            LocalDate.now().plusMonths(12),
+            25,
+            "MEDIUM",
+            "Stärkung der regionalen Wirtschaft und Reduktion von Transportwegen",
+            "admin"
+        ));
+
+        actions.add(createCsrAction(
+            "Nachhaltige Investitionsstrategie",
+            "Entwicklung einer Investitionsstrategie unter Berücksichtigung von ESG-Kriterien.",
+            CsrCategory.ECONOMIC,
+            CsrStatus.PLANNED,
+            "Sabine Klein",
+            LocalDate.now().plusMonths(5),
+            5,
+            "HIGH",
+            "Langfristige Wertsteigerung durch nachhaltige Investments",
+            "admin"
+        ));
+
+        // Overdue action for testing
+        actions.add(createCsrAction(
+            "Energieaudit durchführen",
+            "Durchführung eines umfassenden Energieaudits aller Standorte.",
+            CsrCategory.ENVIRONMENTAL,
+            CsrStatus.IN_PROGRESS,
+            "Markus Wolf",
+            LocalDate.now().minusWeeks(1),
+            70,
+            "HIGH",
+            "Identifikation von Einsparpotentialen",
+            "admin"
+        ));
+
+        csrActionRepository.saveAll(actions);
+        log.info("Created {} CSR actions", actions.size());
+    }
+
+    private CsrAction createCsrAction(String title, String description, CsrCategory category,
+                                       CsrStatus status, String responsible, LocalDate deadline,
+                                       int progress, String priority, String impact, String createdBy) {
+        CsrAction action = new CsrAction();
+        action.setTitle(title);
+        action.setDescription(description);
+        action.setCategory(category);
+        action.setStatus(status);
+        action.setResponsiblePerson(responsible);
+        action.setDeadline(deadline);
+        action.setProgressPercent(progress);
+        action.setPriority(priority);
+        action.setEstimatedImpact(impact);
+        action.setCreatedBy(createdBy);
+        return action;
     }
 }

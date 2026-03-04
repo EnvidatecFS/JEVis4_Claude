@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/monitoring")
+@Tag(name = "Monitoring", description = "Monitoring-Daten und Zeitreihen")
 public class MonitoringController {
 
     private final SensorService sensorService;
@@ -55,10 +58,7 @@ public class MonitoringController {
         return "pages/monitoring";
     }
 
-    /**
-     * REST API endpoint to fetch measurement data for charts.
-     * Returns data in a format optimized for Apache ECharts.
-     */
+    @Operation(summary = "Messdaten abrufen", description = "Liefert Zeitreihendaten im ECharts-Format fuer ausgewaehlte Sensoren und Zeitraum")
     @GetMapping("/api/measurements")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getMeasurements(
@@ -112,9 +112,7 @@ public class MonitoringController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get quick time range presets.
-     */
+    @Operation(summary = "Zeitbereiche", description = "Liefert vordefinierte Zeitbereich-Presets (1h, 6h, 24h, 7d, 30d)")
     @GetMapping("/api/timeranges")
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> getTimeRanges() {

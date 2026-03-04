@@ -1,13 +1,17 @@
 package org.jevis.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.jevis.model.DashboardView;
 import org.jevis.model.Sensor;
+import org.jevis.service.DashboardViewService;
 import org.jevis.service.MeasurementService;
 import org.jevis.service.SensorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +23,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
+@Tag(name = "Dashboard", description = "Dashboard-Widgets und Ansichtenverwaltung")
 public class DashboardController {
 
     private final SensorService sensorService;
     private final MeasurementService measurementService;
+    private final DashboardViewService dashboardViewService;
 
-    public DashboardController(SensorService sensorService, MeasurementService measurementService) {
+    public DashboardController(SensorService sensorService, MeasurementService measurementService,
+                               DashboardViewService dashboardViewService) {
         this.sensorService = sensorService;
         this.measurementService = measurementService;
+        this.dashboardViewService = dashboardViewService;
     }
 
     @GetMapping("/")
@@ -61,9 +69,7 @@ public class DashboardController {
 
     // === Widget Data API Endpoints ===
 
-    /**
-     * Get data for line/area chart widgets
-     */
+    @Operation(summary = "Liniendiagramm-Daten", description = "Liefert Zeitreihendaten fuer Linien-/Flaechendiagramme")
     @GetMapping("/dashboard/api/widget/line")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getLineChartData(
@@ -110,9 +116,7 @@ public class DashboardController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get data for bar chart widgets
-     */
+    @Operation(summary = "Balkendiagramm-Daten", description = "Liefert Durchschnittswerte fuer Balkendiagramme")
     @GetMapping("/dashboard/api/widget/bar")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getBarChartData(
@@ -149,9 +153,7 @@ public class DashboardController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get data for pie chart widgets
-     */
+    @Operation(summary = "Kreisdiagramm-Daten", description = "Sensorverteilung nach Messtyp")
     @GetMapping("/dashboard/api/widget/pie")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getPieChartData() {
@@ -183,9 +185,7 @@ public class DashboardController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get data for gauge widgets
-     */
+    @Operation(summary = "Tachometer-Daten", description = "Aktueller Sensorwert fuer Tachometer-Widgets")
     @GetMapping("/dashboard/api/widget/gauge")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getGaugeData(
@@ -222,9 +222,7 @@ public class DashboardController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get data for radial bar widgets
-     */
+    @Operation(summary = "Radialdiagramm-Daten", description = "Durchschnittswerte der Leistungssensoren")
     @GetMapping("/dashboard/api/widget/radial")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getRadialData() {
@@ -266,9 +264,50 @@ public class DashboardController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get locations for map widget
-     */
+    @Operation(summary = "Treemap-Daten", description = "Summierte Sensorwerte fuer Treemap-Darstellung")
+    @GetMapping("/dashboard/api/widget/treemap")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getTreemapData(
+            @RequestParam(required = false) List<Long> sensorIds,
+            @RequestParam(defaultValue = "24") int hours) {
+
+        Map<String, Object> response = new HashMap<>();
+        List<Map<String, Object>> data = new ArrayList<>();
+
+        Instant end = Instant.now();
+        Instant start = end.minus(hours, ChronoUnit.HOURS);
+
+        if (sensorIds != null && !sensorIds.isEmpty()) {
+            for (Long sensorId : sensorIds) {
+                try {
+                    Sensor sensor = sensorService.getSensorById(sensorId);
+                    BigDecimal sum = measurementService.calculateSum(sensorId, start, end);
+
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("name", sensor.getSensorName());
+                    item.put("value", sum != null ? sum : BigDecimal.ZERO);
+                    item.put("sensorId", sensorId);
+                    item.put("unit", sensor.getUnit());
+                    data.add(item);
+                } catch (Exception e) {
+                    // Skip invalid sensors
+                }
+            }
+        } else {
+            // Demo data - simulate energy production by different systems
+            data.add(createTreemapItem("Hauptanlage Dach", 4250, "kWh"));
+            data.add(createTreemapItem("Carport Ost", 1820, "kWh"));
+            data.add(createTreemapItem("Carport West", 1650, "kWh"));
+            data.add(createTreemapItem("Fassade Sued", 980, "kWh"));
+            data.add(createTreemapItem("Lagergebaeude", 2340, "kWh"));
+            data.add(createTreemapItem("Verwaltung", 1560, "kWh"));
+        }
+
+        response.put("data", data);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Karten-Daten", description = "PV-Anlagenstandorte fuer Kartenwidget")
     @GetMapping("/dashboard/api/widget/map")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getMapData() {
@@ -286,6 +325,112 @@ public class DashboardController {
         response.put("zoom", 14);
 
         return ResponseEntity.ok(response);
+    }
+
+    // === Dashboard View API Endpoints ===
+
+    @Operation(summary = "Alle Ansichten laden", description = "Liefert alle Dashboard-Ansichten des angemeldeten Benutzers")
+    @GetMapping("/dashboard/api/views")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getViews(@AuthenticationPrincipal UserDetails userDetails) {
+        List<DashboardView> views = dashboardViewService.getViewsForUser(userDetails.getUsername());
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (DashboardView v : views) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", v.getId());
+            map.put("name", v.getName());
+            map.put("isDefault", v.getIsDefault());
+            result.add(map);
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Ansicht laden", description = "Liefert eine bestimmte Dashboard-Ansicht mit Layout")
+    @GetMapping("/dashboard/api/views/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getView(@PathVariable Long id,
+                                                        @AuthenticationPrincipal UserDetails userDetails) {
+        DashboardView view = dashboardViewService.getView(id, userDetails.getUsername());
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", view.getId());
+        result.put("name", view.getName());
+        result.put("layoutJson", view.getLayoutJson());
+        result.put("isDefault", view.getIsDefault());
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Ansicht erstellen", description = "Erstellt eine neue Dashboard-Ansicht")
+    @PostMapping("/dashboard/api/views")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> createView(@RequestBody Map<String, Object> body,
+                                                           @AuthenticationPrincipal UserDetails userDetails) {
+        String name = (String) body.get("name");
+        String layoutJson = (String) body.get("layoutJson");
+        boolean setAsDefault = Boolean.TRUE.equals(body.get("setAsDefault"));
+
+        DashboardView view = dashboardViewService.createView(userDetails.getUsername(), name, layoutJson, setAsDefault);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", view.getId());
+        result.put("name", view.getName());
+        result.put("isDefault", view.getIsDefault());
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Ansicht aktualisieren", description = "Aktualisiert Name und Layout einer Ansicht")
+    @PutMapping("/dashboard/api/views/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateView(@PathVariable Long id,
+                                                           @RequestBody Map<String, Object> body,
+                                                           @AuthenticationPrincipal UserDetails userDetails) {
+        String name = (String) body.get("name");
+        String layoutJson = (String) body.get("layoutJson");
+
+        DashboardView view = dashboardViewService.updateView(id, userDetails.getUsername(), name, layoutJson);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", view.getId());
+        result.put("name", view.getName());
+        result.put("isDefault", view.getIsDefault());
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Layout speichern", description = "Speichert nur das Widget-Layout einer Ansicht")
+    @PutMapping("/dashboard/api/views/{id}/layout")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveViewLayout(@PathVariable Long id,
+                                                               @RequestBody Map<String, Object> body,
+                                                               @AuthenticationPrincipal UserDetails userDetails) {
+        String layoutJson = (String) body.get("layoutJson");
+        dashboardViewService.saveLayout(id, userDetails.getUsername(), layoutJson);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Standard-Ansicht setzen", description = "Setzt eine Ansicht als Standard fuer den Benutzer")
+    @PutMapping("/dashboard/api/views/{id}/default")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> setViewAsDefault(@PathVariable Long id,
+                                                                 @AuthenticationPrincipal UserDetails userDetails) {
+        dashboardViewService.setDefault(id, userDetails.getUsername());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Ansicht loeschen", description = "Loescht eine Dashboard-Ansicht")
+    @DeleteMapping("/dashboard/api/views/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteView(@PathVariable Long id,
+                                                           @AuthenticationPrincipal UserDetails userDetails) {
+        dashboardViewService.deleteView(id, userDetails.getUsername());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        return ResponseEntity.ok(result);
     }
 
     // === Helper Methods ===
@@ -333,6 +478,14 @@ public class DashboardController {
         Map<String, Object> item = new HashMap<>();
         item.put("name", name);
         item.put("value", value);
+        return item;
+    }
+
+    private Map<String, Object> createTreemapItem(String name, double value, String unit) {
+        Map<String, Object> item = new HashMap<>();
+        item.put("name", name);
+        item.put("value", value);
+        item.put("unit", unit);
         return item;
     }
 

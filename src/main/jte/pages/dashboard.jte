@@ -19,24 +19,145 @@
             <h1 class="page-title">Dashboard</h1>
             <p class="page-description">Konfigurierbare Widgets fuer Ihre PV-Anlagen</p>
         </div>
-        <div class="page-actions">
-            <button class="btn btn-outline" onclick="toggleEditMode()" id="editModeBtn">
+    </div>
+
+    <!-- Centered Dashboard Toolbar -->
+    <div class="dashboard-toolbar">
+        <!-- View Selector -->
+        <div class="view-selector-wrapper" id="viewSelectorWrapper">
+            <button class="btn btn-outline view-selector-btn" onclick="toggleViewDropdown()" id="viewSelectorBtn">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
-                <span id="editModeText">Bearbeiten</span>
+                <span id="viewSelectorLabel">Ansichten</span>
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="chevron-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
             </button>
-            <button class="btn btn-primary" onclick="openAddWidgetModal()" id="addWidgetBtn" style="display: none;">
+            <div class="view-dropdown" id="viewDropdown">
+                <div class="view-dropdown-list" id="viewDropdownList" tabindex="-1">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="view-dropdown-footer">
+                    <button class="btn btn-sm btn-primary" onclick="openSaveViewModal()" style="width: 100%;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Neue Ansicht speichern
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Split Button -->
+        <div class="split-btn-wrapper" id="saveSplitWrapper">
+            <button class="btn btn-outline split-btn-main" onclick="saveCurrentView()" id="saveViewBtn" title="Aktuelle Ansicht speichern">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                 </svg>
-                Widget hinzufuegen
+                Speichern
             </button>
+            <button class="btn btn-outline split-btn-toggle" onclick="toggleSaveDropdown()" title="Weitere Speicheroptionen">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div class="split-btn-dropdown" id="saveDropdown">
+                <div class="split-btn-dropdown-item" onclick="saveCurrentView(); closeSaveDropdown();">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                    </svg>
+                    Speichern
+                </div>
+                <div class="split-btn-dropdown-item" onclick="openSaveViewModal(); closeSaveDropdown();">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Speichern als...
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Mode Button -->
+        <button class="btn btn-outline" onclick="toggleEditMode()" id="editModeBtn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            <span id="editModeText">Bearbeiten</span>
+        </button>
+
+        <!-- Add Widget (visible only in edit mode) -->
+        <button class="btn btn-primary" onclick="openAddWidgetModal()" id="addWidgetBtn" style="display: none;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Widget hinzufuegen
+        </button>
+    </div>
+
+    <!-- Migration Banner -->
+    <div class="migration-banner" id="migrationBanner" style="display: none;">
+        <div class="migration-banner-content">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Sie haben ein gespeichertes Layout im Browser. Moechten Sie es als Ansicht auf dem Server speichern?</span>
+            <button class="btn btn-sm btn-primary" onclick="migrateLocalStorage()">Jetzt speichern</button>
+            <button class="btn btn-sm btn-outline" onclick="dismissMigrationBanner()">Spaeter</button>
         </div>
     </div>
 
     <!-- GridStack Container -->
     <div class="grid-stack" id="dashboardGrid"></div>
+
+    <!-- Save View Modal -->
+    <div id="saveViewModal" class="modal" style="display: none;">
+        <div class="modal-backdrop" onclick="closeSaveViewModal()"></div>
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Ansicht speichern</h3>
+                <button class="modal-close" onclick="closeSaveViewModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Name der Ansicht</label>
+                    <input type="text" id="saveViewName" class="form-control" placeholder="z.B. Hauptansicht, Monitoring...">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="saveViewDefault">
+                        <span class="form-label" style="margin-bottom: 0;">Als Standard-Ansicht festlegen</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeSaveViewModal()">Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveViewAs()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename View Modal -->
+    <div id="renameViewModal" class="modal" style="display: none;">
+        <div class="modal-backdrop" onclick="closeRenameViewModal()"></div>
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Ansicht umbenennen</h3>
+                <button class="modal-close" onclick="closeRenameViewModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="renameViewId">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Neuer Name</label>
+                    <input type="text" id="renameViewName" class="form-control" placeholder="Name der Ansicht">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeRenameViewModal()">Abbrechen</button>
+                <button class="btn btn-primary" onclick="confirmRenameView()">Umbenennen</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Add Widget Modal -->
     <div id="addWidgetModal" class="modal" style="display: none;">
@@ -107,6 +228,19 @@
                         </div>
                         <div class="widget-type-name">Tachometer</div>
                         <div class="widget-type-desc">Aktuelle Werte</div>
+                    </div>
+                    <div class="widget-type-card" onclick="addWidget('treemap')">
+                        <div class="widget-type-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="9" height="11"/>
+                                <rect x="13" y="2" width="9" height="6"/>
+                                <rect x="13" y="10" width="9" height="3"/>
+                                <rect x="2" y="15" width="6" height="7"/>
+                                <rect x="10" y="15" width="12" height="7"/>
+                            </svg>
+                        </div>
+                        <div class="widget-type-name">Treemap</div>
+                        <div class="widget-type-desc">Hierarchische Summen</div>
                     </div>
                     <div class="widget-type-card" onclick="addWidget('map')">
                         <div class="widget-type-icon">
@@ -778,6 +912,231 @@
             height: 100%;
             border-radius: var(--border-radius);
         }
+
+        /* Dashboard Toolbar - centered horizontal layout */
+        .dashboard-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* View Selector */
+        .view-selector-wrapper {
+            position: relative;
+        }
+
+        .view-selector-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* View dropdown item keyboard focus */
+        .view-dropdown-item:focus,
+        .view-dropdown-item.focused {
+            background: var(--hover-color);
+            outline: none;
+        }
+
+        /* Split Button */
+        .split-btn-wrapper {
+            position: relative;
+            display: inline-flex;
+        }
+
+        .split-btn-main {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .split-btn-toggle {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            padding-left: 0.4rem;
+            padding-right: 0.4rem;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .split-btn-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            min-width: 200px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            overflow: hidden;
+            padding: 0.25rem;
+        }
+
+        .split-btn-dropdown.show {
+            display: block;
+        }
+
+        .split-btn-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .split-btn-dropdown-item:hover {
+            background: var(--hover-color);
+        }
+
+        .view-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            min-width: 280px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .view-dropdown.show {
+            display: block;
+        }
+
+        .view-dropdown-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.25rem;
+        }
+
+        .view-dropdown-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .view-dropdown-item:hover {
+            background: var(--hover-color);
+        }
+
+        .view-dropdown-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .view-dropdown-item-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .view-dropdown-item-name {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .view-badge-default {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.35rem;
+            background: var(--success-color);
+            color: white;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .view-dropdown-item-actions {
+            display: flex;
+            gap: 0.15rem;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .view-dropdown-item:hover .view-dropdown-item-actions {
+            opacity: 1;
+        }
+
+        .view-dropdown-item-actions button {
+            padding: 0.2rem;
+            background: transparent;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+
+        .view-dropdown-item-actions button:hover {
+            background: var(--hover-color);
+            color: var(--text-color);
+        }
+
+        .view-dropdown-item-actions button.danger:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .view-dropdown-footer {
+            padding: 0.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .view-dropdown-empty {
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Migration Banner */
+        .migration-banner {
+            margin-bottom: 1rem;
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--border-radius-lg);
+            padding: 0.75rem 1rem;
+        }
+
+        .migration-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .migration-banner-content svg {
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .migration-banner-content span {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
     </style>
 
     <!-- GridStack JS -->
@@ -795,9 +1154,24 @@
         var widgetCounter = 0;
         var editMode = false;
 
+        // View management state
+        var currentViewId = null;
+        var currentViewName = null;
+        var viewsList = [];
+        var saveLayoutTimer = null;
+
         document.addEventListener('DOMContentLoaded', function() {
             initGrid();
             loadDefaultWidgets();
+        });
+
+        // Close view dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            var wrapper = document.getElementById('viewSelectorWrapper');
+            var dropdown = document.getElementById('viewDropdown');
+            if (wrapper && !wrapper.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
         });
 
         function initGrid() {
@@ -816,25 +1190,81 @@
             });
         }
 
-        function loadDefaultWidgets() {
-            // Load saved layout or create default
-            var savedLayout = localStorage.getItem('dashboardLayout');
-            if (savedLayout) {
-                try {
-                    var layout = JSON.parse(savedLayout);
-                    layout.forEach(function(item) {
-                        createWidget(item.type, item.x, item.y, item.w, item.h, item.title, {
-                            sensorConfigs: item.sensorConfigs || [],
-                            sensorIds: item.sensorIds || []
-                        });
-                    });
-                    return;
-                } catch(e) {
-                    console.error('Error loading layout:', e);
-                }
+        // === CSRF Helper ===
+        function fetchWithCsrf(url, options) {
+            options = options || {};
+            options.headers = options.headers || {};
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            var csrfHeader = document.querySelector('meta[name="csrf-header"]');
+            if (csrfToken && csrfHeader) {
+                options.headers[csrfHeader.content] = csrfToken.content;
             }
+            if (!options.headers['Content-Type'] && options.body) {
+                options.headers['Content-Type'] = 'application/json';
+            }
+            return fetch(url, options);
+        }
 
-            // Default layout
+        // === View Management ===
+
+        function loadDefaultWidgets() {
+            // First check server for saved views
+            fetch('/dashboard/api/views')
+                .then(function(r) { return r.json(); })
+                .then(function(views) {
+                    viewsList = views;
+                    renderViewSelector();
+
+                    if (views.length > 0) {
+                        // Load default view or first view
+                        var defaultView = views.find(function(v) { return v.isDefault; });
+                        var viewToLoad = defaultView || views[0];
+                        loadView(viewToLoad.id);
+                    } else {
+                        // No server views - check localStorage
+                        var savedLayout = localStorage.getItem('dashboardLayout');
+                        if (savedLayout) {
+                            try {
+                                var layout = JSON.parse(savedLayout);
+                                layout.forEach(function(item) {
+                                    createWidget(item.type, item.x, item.y, item.w, item.h, item.title, {
+                                        sensorConfigs: item.sensorConfigs || [],
+                                        sensorIds: item.sensorIds || []
+                                    });
+                                });
+                                // Show migration banner
+                                showMigrationBanner();
+                                return;
+                            } catch(e) {
+                                console.error('Error loading layout:', e);
+                            }
+                        }
+
+                        // Default layout
+                        createDefaultWidgets();
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Error loading views:', err);
+                    // Fallback to localStorage
+                    var savedLayout = localStorage.getItem('dashboardLayout');
+                    if (savedLayout) {
+                        try {
+                            var layout = JSON.parse(savedLayout);
+                            layout.forEach(function(item) {
+                                createWidget(item.type, item.x, item.y, item.w, item.h, item.title, {
+                                    sensorConfigs: item.sensorConfigs || [],
+                                    sensorIds: item.sensorIds || []
+                                });
+                            });
+                            return;
+                        } catch(e) { /* ignore */ }
+                    }
+                    createDefaultWidgets();
+                });
+        }
+
+        function createDefaultWidgets() {
             createWidget('line', 0, 0, 6, 4, 'Leistungsverlauf');
             createWidget('gauge', 6, 0, 3, 4, 'Aktueller Wirkungsgrad');
             createWidget('pie', 9, 0, 3, 4, 'Sensorverteilung');
@@ -843,7 +1273,194 @@
             createWidget('map', 9, 4, 3, 4, 'Anlagenstandorte');
         }
 
-        function saveLayout() {
+        function loadViewsList() {
+            fetch('/dashboard/api/views')
+                .then(function(r) { return r.json(); })
+                .then(function(views) {
+                    viewsList = views;
+                    renderViewSelector();
+                });
+        }
+
+        function renderViewSelector() {
+            var list = document.getElementById('viewDropdownList');
+            var label = document.getElementById('viewSelectorLabel');
+            var saveSplit = document.getElementById('saveSplitWrapper');
+
+            // Update label and save button visibility
+            if (currentViewId && currentViewName) {
+                label.textContent = currentViewName;
+                saveSplit.style.display = 'inline-flex';
+            } else {
+                label.textContent = 'Ansichten';
+                saveSplit.style.display = 'none';
+            }
+
+            // Build dropdown list
+            if (viewsList.length === 0) {
+                list.innerHTML = '<div class="view-dropdown-empty">Keine gespeicherten Ansichten</div>';
+                return;
+            }
+
+            var html = '';
+            viewsList.forEach(function(view) {
+                var isActive = view.id === currentViewId;
+                html += '<div class="view-dropdown-item' + (isActive ? ' active' : '') + '" onclick="loadView(' + view.id + ')">';
+                html += '  <div class="view-dropdown-item-info">';
+                html += '    <span class="view-dropdown-item-name">' + escapeHtml(view.name) + '</span>';
+                if (view.isDefault) {
+                    html += '    <span class="view-badge-default">Standard</span>';
+                }
+                html += '  </div>';
+                html += '  <div class="view-dropdown-item-actions">';
+                // Set as default button
+                if (!view.isDefault) {
+                    html += '    <button onclick="event.stopPropagation(); setViewAsDefault(' + view.id + ')" title="Als Standard festlegen">';
+                    html += '      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
+                    html += '    </button>';
+                }
+                // Rename button
+                html += '    <button onclick="event.stopPropagation(); openRenameView(' + view.id + ', \'' + escapeHtml(view.name).replace(/'/g, "\\'") + '\')" title="Umbenennen">';
+                html += '      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>';
+                html += '    </button>';
+                // Delete button
+                html += '    <button class="danger" onclick="event.stopPropagation(); deleteView(' + view.id + ', \'' + escapeHtml(view.name).replace(/'/g, "\\'") + '\')" title="Loeschen">';
+                html += '      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
+                html += '    </button>';
+                html += '  </div>';
+                html += '</div>';
+            });
+
+            list.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        var viewDropdownFocusIndex = -1;
+
+        function toggleViewDropdown() {
+            var dropdown = document.getElementById('viewDropdown');
+            dropdown.classList.toggle('show');
+            if (dropdown.classList.contains('show')) {
+                viewDropdownFocusIndex = -1;
+                // Focus the list for keyboard events
+                document.getElementById('viewDropdownList').focus();
+            }
+        }
+
+        // Keyboard navigation for view dropdown
+        document.addEventListener('keydown', function(e) {
+            var dropdown = document.getElementById('viewDropdown');
+            if (!dropdown || !dropdown.classList.contains('show')) return;
+
+            var items = dropdown.querySelectorAll('.view-dropdown-item');
+            if (items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                viewDropdownFocusIndex = Math.min(viewDropdownFocusIndex + 1, items.length - 1);
+                updateViewDropdownFocus(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                viewDropdownFocusIndex = Math.max(viewDropdownFocusIndex - 1, 0);
+                updateViewDropdownFocus(items);
+            } else if (e.key === 'Enter' && viewDropdownFocusIndex >= 0) {
+                e.preventDefault();
+                items[viewDropdownFocusIndex].click();
+            } else if (e.key === 'Escape') {
+                dropdown.classList.remove('show');
+                viewDropdownFocusIndex = -1;
+            }
+        });
+
+        function updateViewDropdownFocus(items) {
+            items.forEach(function(item, i) {
+                if (i === viewDropdownFocusIndex) {
+                    item.classList.add('focused');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('focused');
+                }
+            });
+        }
+
+        // Save split-button dropdown
+        function toggleSaveDropdown() {
+            document.getElementById('saveDropdown').classList.toggle('show');
+        }
+
+        function closeSaveDropdown() {
+            document.getElementById('saveDropdown').classList.remove('show');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            var viewWrapper = document.getElementById('viewSelectorWrapper');
+            var viewDropdown = document.getElementById('viewDropdown');
+            if (viewWrapper && !viewWrapper.contains(e.target)) {
+                viewDropdown.classList.remove('show');
+            }
+            var saveWrapper = document.getElementById('saveSplitWrapper');
+            var saveDropdown = document.getElementById('saveDropdown');
+            if (saveWrapper && !saveWrapper.contains(e.target)) {
+                saveDropdown.classList.remove('show');
+            }
+        });
+
+        function loadView(id) {
+            document.getElementById('viewDropdown').classList.remove('show');
+
+            fetch('/dashboard/api/views/' + id)
+                .then(function(r) { return r.json(); })
+                .then(function(view) {
+                    currentViewId = view.id;
+                    currentViewName = view.name;
+
+                    // Clear existing widgets
+                    clearAllWidgets();
+
+                    // Load layout from view
+                    if (view.layoutJson) {
+                        try {
+                            var layout = JSON.parse(view.layoutJson);
+                            layout.forEach(function(item) {
+                                createWidget(item.type, item.x, item.y, item.w, item.h, item.title, {
+                                    sensorConfigs: item.sensorConfigs || [],
+                                    sensorIds: item.sensorIds || []
+                                });
+                            });
+                        } catch(e) {
+                            console.error('Error parsing view layout:', e);
+                            createDefaultWidgets();
+                        }
+                    } else {
+                        createDefaultWidgets();
+                    }
+
+                    renderViewSelector();
+                    hideMigrationBanner();
+                })
+                .catch(function(err) {
+                    console.error('Error loading view:', err);
+                });
+        }
+
+        function clearAllWidgets() {
+            Object.keys(widgets).forEach(function(id) {
+                var w = widgets[id];
+                if (w.chart) w.chart.dispose();
+                if (w.map) w.map.remove();
+            });
+            widgets = {};
+            widgetCounter = 0;
+            grid.removeAll();
+        }
+
+        function getLayoutJson() {
             var layout = [];
             Object.keys(widgets).forEach(function(id) {
                 var w = widgets[id];
@@ -861,7 +1478,207 @@
                     });
                 }
             });
-            localStorage.setItem('dashboardLayout', JSON.stringify(layout));
+            return JSON.stringify(layout);
+        }
+
+        function saveLayout() {
+            var layoutJson = getLayoutJson();
+            // Always save to localStorage as fallback
+            localStorage.setItem('dashboardLayout', layoutJson);
+
+            // If a view is active, debounce save to server
+            if (currentViewId) {
+                if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
+                saveLayoutTimer = setTimeout(function() {
+                    fetchWithCsrf('/dashboard/api/views/' + currentViewId + '/layout', {
+                        method: 'PUT',
+                        body: JSON.stringify({ layoutJson: layoutJson })
+                    }).catch(function(err) {
+                        console.error('Error saving layout to server:', err);
+                    });
+                }, 1000);
+            }
+        }
+
+        // === Save / Create View ===
+
+        function openSaveViewModal() {
+            document.getElementById('viewDropdown').classList.remove('show');
+            document.getElementById('saveViewName').value = '';
+            document.getElementById('saveViewDefault').checked = false;
+            document.getElementById('saveViewModal').style.display = 'flex';
+            setTimeout(function() {
+                document.getElementById('saveViewName').focus();
+            }, 100);
+        }
+
+        function closeSaveViewModal() {
+            document.getElementById('saveViewModal').style.display = 'none';
+        }
+
+        function saveViewAs() {
+            var name = document.getElementById('saveViewName').value.trim();
+            if (!name) {
+                document.getElementById('saveViewName').focus();
+                return;
+            }
+
+            var setAsDefault = document.getElementById('saveViewDefault').checked;
+            var layoutJson = getLayoutJson();
+
+            fetchWithCsrf('/dashboard/api/views', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: name,
+                    layoutJson: layoutJson,
+                    setAsDefault: setAsDefault
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(view) {
+                currentViewId = view.id;
+                currentViewName = view.name;
+                closeSaveViewModal();
+                loadViewsList();
+                hideMigrationBanner();
+            })
+            .catch(function(err) {
+                console.error('Error saving view:', err);
+            });
+        }
+
+        function saveCurrentView() {
+            if (!currentViewId) return;
+            var layoutJson = getLayoutJson();
+
+            fetchWithCsrf('/dashboard/api/views/' + currentViewId + '/layout', {
+                method: 'PUT',
+                body: JSON.stringify({ layoutJson: layoutJson })
+            })
+            .then(function() {
+                // Brief visual feedback
+                var btn = document.getElementById('saveViewBtn');
+                var origText = btn.innerHTML;
+                btn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Gespeichert';
+                setTimeout(function() { btn.innerHTML = origText; }, 1500);
+            })
+            .catch(function(err) {
+                console.error('Error saving view:', err);
+            });
+        }
+
+        // === Rename View ===
+
+        function openRenameView(id, name) {
+            document.getElementById('renameViewId').value = id;
+            document.getElementById('renameViewName').value = name;
+            document.getElementById('renameViewModal').style.display = 'flex';
+            document.getElementById('viewDropdown').classList.remove('show');
+            setTimeout(function() {
+                document.getElementById('renameViewName').focus();
+                document.getElementById('renameViewName').select();
+            }, 100);
+        }
+
+        function closeRenameViewModal() {
+            document.getElementById('renameViewModal').style.display = 'none';
+        }
+
+        function confirmRenameView() {
+            var id = parseInt(document.getElementById('renameViewId').value);
+            var newName = document.getElementById('renameViewName').value.trim();
+            if (!newName) return;
+
+            fetchWithCsrf('/dashboard/api/views/' + id, {
+                method: 'PUT',
+                body: JSON.stringify({ name: newName })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(view) {
+                if (currentViewId === id) {
+                    currentViewName = view.name;
+                }
+                closeRenameViewModal();
+                loadViewsList();
+            })
+            .catch(function(err) {
+                console.error('Error renaming view:', err);
+            });
+        }
+
+        // === Delete View ===
+
+        function deleteView(id, name) {
+            if (!confirm('Ansicht "' + name + '" wirklich loeschen?')) return;
+
+            document.getElementById('viewDropdown').classList.remove('show');
+
+            fetchWithCsrf('/dashboard/api/views/' + id, {
+                method: 'DELETE'
+            })
+            .then(function() {
+                if (currentViewId === id) {
+                    currentViewId = null;
+                    currentViewName = null;
+                }
+                loadViewsList();
+            })
+            .catch(function(err) {
+                console.error('Error deleting view:', err);
+            });
+        }
+
+        // === Set Default ===
+
+        function setViewAsDefault(id) {
+            fetchWithCsrf('/dashboard/api/views/' + id + '/default', {
+                method: 'PUT'
+            })
+            .then(function() {
+                document.getElementById('viewDropdown').classList.remove('show');
+                loadViewsList();
+            })
+            .catch(function(err) {
+                console.error('Error setting default view:', err);
+            });
+        }
+
+        // === Migration ===
+
+        function showMigrationBanner() {
+            document.getElementById('migrationBanner').style.display = 'block';
+        }
+
+        function hideMigrationBanner() {
+            document.getElementById('migrationBanner').style.display = 'none';
+        }
+
+        function dismissMigrationBanner() {
+            hideMigrationBanner();
+        }
+
+        function migrateLocalStorage() {
+            var savedLayout = localStorage.getItem('dashboardLayout');
+            if (!savedLayout) return;
+
+            fetchWithCsrf('/dashboard/api/views', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: 'Meine Ansicht',
+                    layoutJson: savedLayout,
+                    setAsDefault: true
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(view) {
+                currentViewId = view.id;
+                currentViewName = view.name;
+                hideMigrationBanner();
+                loadViewsList();
+            })
+            .catch(function(err) {
+                console.error('Error migrating layout:', err);
+            });
         }
 
         function toggleEditMode() {
@@ -908,6 +1725,7 @@
                 'radial': 'Radiales Diagramm',
                 'pie': 'Kreisdiagramm',
                 'gauge': 'Tachometer',
+                'treemap': 'Treemap',
                 'map': 'Standortkarte'
             };
             createWidget(type, 0, 0, 4, 4, titles[type] || 'Widget');
@@ -949,7 +1767,7 @@
                     '<div id="' + id + '_chart" class="widget-chart"></div>' +
                 '</div>';
 
-            grid.addWidget({
+            var addedEl = grid.addWidget({
                 id: id,
                 x: x,
                 y: y,
@@ -957,6 +1775,7 @@
                 h: h,
                 content: content.innerHTML
             });
+            addedEl.id = id;
 
             widgets[id] = {
                 type: type,
@@ -1045,6 +1864,8 @@
                     return getPieOption(data, colorMap);
                 case 'gauge':
                     return getGaugeOption(data, colorMap);
+                case 'treemap':
+                    return getTreemapOption(data, colorMap);
                 default:
                     return {};
             }
@@ -1225,6 +2046,136 @@
             };
         }
 
+        function getTreemapOption(data, colorMap) {
+            var palette = JEVisChartTheme.getPalette();
+            var hasCustomColors = colorMap && Object.keys(colorMap).length > 0;
+
+            // Get unit from first data item (if available)
+            var unit = (data.data && data.data.length > 0 && data.data[0].unit) ? data.data[0].unit : 'kWh';
+
+            // Calculate total for percentage display
+            var total = data.data.reduce(function(sum, item) {
+                return sum + (parseFloat(item.value) || 0);
+            }, 0);
+
+            // Format value with unit
+            function formatValue(value) {
+                if (value >= 1000000) {
+                    return (value / 1000000).toFixed(2) + ' M' + unit;
+                } else if (value >= 1000) {
+                    return (value / 1000).toFixed(2) + ' k' + unit;
+                } else {
+                    return value.toFixed(1) + ' ' + unit;
+                }
+            }
+
+            // Map sensor colors to data items if available
+            var treemapData = data.data.map(function(item, index) {
+                var itemData = {
+                    name: item.name,
+                    value: item.value,
+                    unit: item.unit || unit
+                };
+
+                // Use custom color if available for this sensor
+                if (hasCustomColors && item.sensorId && colorMap[item.sensorId]) {
+                    itemData.itemStyle = { color: colorMap[item.sensorId] };
+                } else if (hasCustomColors) {
+                    var customColors = Object.values(colorMap);
+                    if (index < customColors.length) {
+                        itemData.itemStyle = { color: customColors[index] };
+                    }
+                }
+
+                return itemData;
+            });
+
+            return {
+                color: palette,
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: 'rgba(50, 50, 50, 0.9)',
+                    borderColor: 'transparent',
+                    textStyle: { color: '#fff' },
+                    formatter: function(params) {
+                        var value = params.value;
+                        var percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        return '<div style="font-weight: 600; margin-bottom: 4px;">' + params.name + '</div>' +
+                               '<div style="font-size: 16px; font-weight: bold;">' + formatValue(value) + '</div>' +
+                               '<div style="color: #aaa; font-size: 12px;">' + percentage + '% des Gesamten</div>';
+                    }
+                },
+                series: [{
+                    type: 'treemap',
+                    width: '100%',
+                    height: '100%',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    roam: false,
+                    nodeClick: false,
+                    breadcrumb: { show: false },
+                    label: {
+                        show: true,
+                        formatter: function(params) {
+                            var value = params.value;
+                            var itemUnit = params.data.unit || unit;
+                            var formattedValue;
+                            if (value >= 1000000) {
+                                formattedValue = (value / 1000000).toFixed(1) + ' M' + itemUnit;
+                            } else if (value >= 1000) {
+                                formattedValue = (value / 1000).toFixed(1) + ' k' + itemUnit;
+                            } else {
+                                formattedValue = value.toFixed(0) + ' ' + itemUnit;
+                            }
+                            return '{name|' + params.name + '}\n{value|' + formattedValue + '}';
+                        },
+                        rich: {
+                            name: {
+                                fontSize: 14,
+                                fontWeight: 'bold',
+                                color: '#fff',
+                                textShadowColor: 'rgba(0,0,0,0.3)',
+                                textShadowBlur: 3,
+                                lineHeight: 22
+                            },
+                            value: {
+                                fontSize: 12,
+                                color: 'rgba(255,255,255,0.85)',
+                                textShadowColor: 'rgba(0,0,0,0.3)',
+                                textShadowBlur: 2
+                            }
+                        },
+                        position: 'insideTopLeft',
+                        padding: [8, 10]
+                    },
+                    upperLabel: {
+                        show: false
+                    },
+                    itemStyle: {
+                        borderColor: 'rgba(255,255,255,0.8)',
+                        borderWidth: 2,
+                        gapWidth: 2,
+                        borderRadius: 4
+                    },
+                    levels: [
+                        {
+                            itemStyle: {
+                                borderColor: 'rgba(255,255,255,0.9)',
+                                borderWidth: 3,
+                                gapWidth: 3
+                            },
+                            upperLabel: {
+                                show: false
+                            }
+                        }
+                    ],
+                    data: treemapData
+                }]
+            };
+        }
+
         function initMapWidget(id, container) {
             fetch('/dashboard/api/widget/map')
                 .then(function(r) { return r.json(); })
@@ -1308,12 +2259,13 @@
                 'radial': 'Radiales Diagramm',
                 'pie': 'Kreisdiagramm',
                 'gauge': 'Tachometer',
+                'treemap': 'Treemap',
                 'map': 'Karte'
             };
             document.getElementById('settingsWidgetType').value = typeNames[w.type] || w.type;
 
             // Show/hide datasources tab based on widget type
-            var supportsSensors = ['line', 'area', 'bar', 'radial'].indexOf(w.type) !== -1;
+            var supportsSensors = ['line', 'area', 'bar', 'radial', 'treemap'].indexOf(w.type) !== -1;
             document.getElementById('tabDatasources').style.display = supportsSensors ? 'flex' : 'none';
 
             // Reset filters

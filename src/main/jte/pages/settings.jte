@@ -91,12 +91,24 @@
                 <div class="form-group">
                     <label for="theme">Thema</label>
                     <select id="theme" onchange="changeTheme(this.value)">
-                        <option value="light" selected>Hell</option>
-                        <option value="dark">Dunkel</option>
-                        <option value="blue">Blau</option>
-                        <option value="green">Grün (PV-optimiert)</option>
-                        <option value="ocean">Ozean</option>
-                        <option value="sunset">Sonnenuntergang</option>
+                        <optgroup label="Standard">
+                            <option value="light" selected>Hell</option>
+                            <option value="dark">Dunkel</option>
+                        </optgroup>
+                        <optgroup label="Farbthemen">
+                            <option value="blue">Blau</option>
+                            <option value="green">Grün (PV-optimiert)</option>
+                            <option value="ocean">Ozean</option>
+                            <option value="sunset">Sonnenuntergang</option>
+                        </optgroup>
+                        <optgroup label="Sun & Charge Germany">
+                            <option value="sun-charge">Sun & Charge (Hell)</option>
+                            <option value="sun-charge-dark">Sun & Charge (Dunkel)</option>
+                        </optgroup>
+                        <optgroup label="enpower.life">
+                            <option value="enpower">enpower.life (Hell)</option>
+                            <option value="enpower-dark">enpower.life (Dunkel)</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="form-group">

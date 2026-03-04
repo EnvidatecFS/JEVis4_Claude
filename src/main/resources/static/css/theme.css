@@ -226,7 +226,10 @@ select:disabled {
 
 /* Buttons */
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     padding: var(--spacing-sm) var(--spacing-lg);
     font-size: var(--font-size-base);
     font-weight: 500;
@@ -991,4 +994,632 @@ select:disabled {
     --chart-color-9: #ef4444;
     --chart-color-10: #6366f1;
     --chart-bar-gradient-end: #ea580c;
+}
+
+/* ========================================
+   Sun & Charge Theme
+   For Sun and Charge Germany GmbH
+   Solar Gold (#ffde00) + Navy Deep (#1a2a45)
+   ======================================== */
+[data-theme="sun-charge"] {
+    /* Primary Colors */
+    --primary-color: #ffde00;           /* Solar Gold - primary accent */
+    --primary-hover: #f5b800;           /* Warm Amber - hover state */
+    --secondary-color: #1a2a45;         /* Navy Deep - secondary/structure */
+    --secondary-hover: #2d4a6f;         /* Steel Blue - secondary hover */
+    --accent-color: #ff8c00;            /* Alert Orange - warnings/attention */
+    --danger-color: #dc3545;            /* Error Red */
+
+    /* Backgrounds & Surfaces */
+    --background: #f8f9fc;              /* Light gray-blue background */
+    --surface: #ffffff;                 /* White surface */
+    --card-bg: #ffffff;                 /* Card background */
+
+    /* Text Colors */
+    --text-primary: #1a2a45;            /* Navy Deep for text */
+    --text-secondary: #3d4d66;          /* Navy 70% for secondary text */
+    --text-color: #1a2a45;
+    --text-muted: #8c96a8;              /* Navy 50% for muted */
+
+    /* Borders & Lines */
+    --border-color: #d5d9e0;            /* Navy 20% for borders */
+    --hover-color: #fff4b3;             /* Soft Gold for hover backgrounds */
+
+    /* Shadows - Navy-tinted */
+    --shadow-sm: 0 1px 2px 0 rgba(26, 42, 69, 0.08);
+    --shadow: 0 2px 4px 0 rgba(26, 42, 69, 0.1), 0 1px 2px 0 rgba(26, 42, 69, 0.06);
+    --shadow-lg: 0 8px 24px -4px rgba(26, 42, 69, 0.15), 0 4px 8px -2px rgba(26, 42, 69, 0.08);
+
+    /* Chart Colors - Energy/Solar palette */
+    --chart-color-1: #ffde00;           /* Solar Gold */
+    --chart-color-2: #1a2a45;           /* Navy Deep */
+    --chart-color-3: #28a745;           /* Success Green */
+    --chart-color-4: #f5b800;           /* Warm Amber */
+    --chart-color-5: #2d4a6f;           /* Steel Blue */
+    --chart-color-6: #ff8c00;           /* Alert Orange */
+    --chart-color-7: #17a2b8;           /* Info Cyan */
+    --chart-color-8: #3a5a7c;           /* Light Navy */
+    --chart-color-9: #ffc107;           /* Bright Yellow */
+    --chart-color-10: #6c757d;          /* Neutral Gray */
+
+    /* Semantic Chart Colors */
+    --chart-success: #28a745;
+    --chart-warning: #ff8c00;
+    --chart-danger: #dc3545;
+    --chart-info: #17a2b8;
+    --chart-neutral: #8c96a8;
+
+    /* Chart UI */
+    --chart-bar-gradient-start: #ffde00;
+    --chart-bar-gradient-end: #f5b800;
+    --chart-gauge-progress: #ffde00;
+}
+
+/* Sun & Charge Dark Mode */
+[data-theme="sun-charge-dark"] {
+    /* Primary Colors */
+    --primary-color: #ffde00;           /* Solar Gold stays vibrant */
+    --primary-hover: #ffe533;           /* Lighter gold on hover */
+    --secondary-color: #3a5a7c;         /* Light Navy for dark mode */
+    --secondary-hover: #4a6a8c;
+    --accent-color: #ff8c00;
+    --danger-color: #f87171;
+
+    /* Dark Backgrounds */
+    --background: #0f1a2b;              /* Navy 90% */
+    --surface: #1a2a45;                 /* Navy Deep */
+    --card-bg: #1a2a45;
+
+    /* Light Text on Dark */
+    --text-primary: #f8f9fc;
+    --text-secondary: #d5d9e0;
+    --text-color: #f8f9fc;
+    --text-muted: #8c96a8;
+
+    /* Borders */
+    --border-color: #2d4a6f;
+    --hover-color: rgba(255, 222, 0, 0.15);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 4px 8px -2px rgba(0, 0, 0, 0.3);
+
+    /* Chart Colors - Brighter for dark bg */
+    --chart-color-1: #ffde00;
+    --chart-color-2: #5a8ac4;           /* Lighter blue */
+    --chart-color-3: #34d399;           /* Bright green */
+    --chart-color-4: #fbbf24;           /* Bright amber */
+    --chart-color-5: #60a5fa;           /* Light blue */
+    --chart-color-6: #fb923c;           /* Bright orange */
+    --chart-color-7: #22d3ee;           /* Cyan */
+    --chart-color-8: #818cf8;           /* Indigo */
+    --chart-color-9: #ffe566;           /* Light yellow */
+    --chart-color-10: #9ca3af;          /* Gray */
+
+    --chart-bar-gradient-start: #ffde00;
+    --chart-bar-gradient-end: #ffe566;
+}
+
+/* Sun & Charge Component Overrides */
+[data-theme="sun-charge"] .btn-primary,
+[data-theme="sun-charge-dark"] .btn-primary {
+    background-color: #ffde00;
+    color: #1a2a45;
+    font-weight: 600;
+}
+
+[data-theme="sun-charge"] .btn-primary:hover:not(:disabled),
+[data-theme="sun-charge-dark"] .btn-primary:hover:not(:disabled) {
+    background-color: #f5b800;
+    color: #1a2a45;
+    box-shadow: 0 4px 12px rgba(255, 222, 0, 0.4);
+}
+
+[data-theme="sun-charge"] .btn-secondary {
+    background-color: #1a2a45;
+    color: #ffffff;
+}
+
+[data-theme="sun-charge"] .btn-secondary:hover:not(:disabled) {
+    background-color: #2d4a6f;
+}
+
+[data-theme="sun-charge-dark"] .btn-secondary {
+    background-color: #3a5a7c;
+    color: #ffffff;
+}
+
+[data-theme="sun-charge"] .btn-outline {
+    border-color: #1a2a45;
+    color: #1a2a45;
+}
+
+[data-theme="sun-charge"] .btn-outline:hover:not(:disabled) {
+    background-color: #1a2a45;
+    color: #ffffff;
+}
+
+/* Sun & Charge Header */
+[data-theme="sun-charge"] .app-header,
+[data-theme="sun-charge-dark"] .app-header {
+    background-color: #1a2a45;
+    border-bottom-color: #2d4a6f;
+}
+
+[data-theme="sun-charge"] .app-header .header-logo-img,
+[data-theme="sun-charge-dark"] .app-header .header-logo-img {
+    filter: brightness(0) invert(1);
+}
+
+[data-theme="sun-charge"] .sidebar-toggle-header,
+[data-theme="sun-charge-dark"] .sidebar-toggle-header {
+    color: #d5d9e0;
+}
+
+[data-theme="sun-charge"] .sidebar-toggle-header:hover,
+[data-theme="sun-charge-dark"] .sidebar-toggle-header:hover {
+    background-color: rgba(255, 222, 0, 0.1);
+    color: #ffde00;
+}
+
+[data-theme="sun-charge"] .icon-button,
+[data-theme="sun-charge-dark"] .icon-button {
+    color: #d5d9e0;
+}
+
+[data-theme="sun-charge"] .icon-button:hover,
+[data-theme="sun-charge-dark"] .icon-button:hover {
+    background-color: rgba(255, 222, 0, 0.1);
+    color: #ffde00;
+}
+
+[data-theme="sun-charge"] .user-menu:hover,
+[data-theme="sun-charge-dark"] .user-menu:hover {
+    background-color: rgba(255, 222, 0, 0.1);
+}
+
+[data-theme="sun-charge"] .user-name,
+[data-theme="sun-charge-dark"] .user-name {
+    color: #ffffff;
+}
+
+[data-theme="sun-charge"] .user-role,
+[data-theme="sun-charge-dark"] .user-role {
+    color: #8c96a8;
+}
+
+[data-theme="sun-charge"] .user-avatar,
+[data-theme="sun-charge-dark"] .user-avatar {
+    background: linear-gradient(135deg, #ffde00, #f5b800);
+    color: #1a2a45;
+}
+
+/* Sun & Charge Sidebar */
+[data-theme="sun-charge"] .sidebar {
+    background-color: #ffffff;
+    border-right-color: #d5d9e0;
+}
+
+[data-theme="sun-charge-dark"] .sidebar {
+    background-color: #1a2a45;
+    border-right-color: #2d4a6f;
+}
+
+[data-theme="sun-charge"] .nav-item.active {
+    background-color: #1a2a45;
+    color: #ffffff;
+}
+
+[data-theme="sun-charge"] .nav-item.active:hover {
+    background-color: #2d4a6f;
+}
+
+[data-theme="sun-charge-dark"] .nav-item.active {
+    background-color: #ffde00;
+    color: #1a2a45;
+}
+
+[data-theme="sun-charge-dark"] .nav-item.active:hover {
+    background-color: #f5b800;
+}
+
+[data-theme="sun-charge"] .nav-item:hover:not(.active) {
+    background-color: #fff4b3;
+    color: #1a2a45;
+}
+
+[data-theme="sun-charge-dark"] .nav-item:hover:not(.active) {
+    background-color: rgba(255, 222, 0, 0.15);
+    color: #ffde00;
+}
+
+/* Sun & Charge Cards with accent */
+[data-theme="sun-charge"] .card-highlight,
+[data-theme="sun-charge-dark"] .card-highlight {
+    border-left: 4px solid #ffde00;
+}
+
+/* Sun & Charge Links */
+[data-theme="sun-charge"] a {
+    color: #1a2a45;
+}
+
+[data-theme="sun-charge"] a:hover {
+    color: #2d4a6f;
+}
+
+[data-theme="sun-charge-dark"] a {
+    color: #ffde00;
+}
+
+[data-theme="sun-charge-dark"] a:hover {
+    color: #ffe566;
+}
+
+/* Sun & Charge Focus States */
+[data-theme="sun-charge"] input:focus,
+[data-theme="sun-charge"] textarea:focus,
+[data-theme="sun-charge"] select:focus {
+    border-color: #1a2a45;
+    box-shadow: 0 0 0 3px rgba(26, 42, 69, 0.15);
+}
+
+[data-theme="sun-charge-dark"] input:focus,
+[data-theme="sun-charge-dark"] textarea:focus,
+[data-theme="sun-charge-dark"] select:focus {
+    border-color: #ffde00;
+    box-shadow: 0 0 0 3px rgba(255, 222, 0, 0.2);
+}
+
+/* Sun & Charge Auth Page */
+[data-theme="sun-charge"] .auth-container {
+    background: linear-gradient(135deg, #f8f9fc 0%, #eaedf2 100%);
+}
+
+[data-theme="sun-charge-dark"] .auth-container {
+    background: linear-gradient(135deg, #1a2a45 0%, #0f1a2b 100%);
+}
+
+[data-theme="sun-charge"] .auth-logo h1 {
+    color: #1a2a45;
+}
+
+[data-theme="sun-charge-dark"] .auth-logo h1 {
+    color: #ffde00;
+}
+
+/* Sun & Charge Alerts */
+[data-theme="sun-charge"] .alert-info,
+[data-theme="sun-charge-dark"] .alert-info {
+    background-color: rgba(26, 42, 69, 0.1);
+    color: #1a2a45;
+    border-color: rgba(26, 42, 69, 0.2);
+}
+
+[data-theme="sun-charge"] .alert-warning,
+[data-theme="sun-charge-dark"] .alert-warning {
+    background-color: rgba(255, 222, 0, 0.2);
+    color: #1a2a45;
+    border-color: rgba(255, 222, 0, 0.4);
+}
+
+/* ========================================
+   Enpower.life Theme
+   Primary Colors: #1e2539, #44d8a6, #fef6f3
+   Fresh Green (#44d8a6) + Deep Navy (#1e2539) + Soft Cream (#fef6f3)
+   ======================================== */
+[data-theme="enpower"] {
+    /* Primary Colors */
+    --primary-color: #44d8a6;           /* Fresh Green - primary accent */
+    --primary-hover: #36c294;           /* Darker green - hover state */
+    --secondary-color: #1e2539;         /* Deep Navy - secondary/structure */
+    --secondary-hover: #2d3a52;         /* Lighter navy - secondary hover */
+    --accent-color: #f59e0b;            /* Warm Amber - attention */
+    --danger-color: #ef4444;            /* Error Red */
+
+    /* Backgrounds & Surfaces */
+    --background: #fef6f3;              /* Soft Cream background */
+    --surface: #ffffff;                 /* White surface */
+    --card-bg: #ffffff;                 /* Card background */
+
+    /* Text Colors */
+    --text-primary: #1e2539;            /* Deep Navy for text */
+    --text-secondary: #4a5568;          /* Gray for secondary text */
+    --text-color: #1e2539;
+    --text-muted: #718096;              /* Muted gray */
+
+    /* Borders & Lines */
+    --border-color: #e8e0dc;            /* Warm gray border */
+    --hover-color: #e6fbf3;             /* Soft green for hover */
+
+    /* Shadows - Navy-tinted */
+    --shadow-sm: 0 1px 2px 0 rgba(30, 37, 57, 0.08);
+    --shadow: 0 2px 4px 0 rgba(30, 37, 57, 0.1), 0 1px 2px 0 rgba(30, 37, 57, 0.06);
+    --shadow-lg: 0 8px 24px -4px rgba(30, 37, 57, 0.15), 0 4px 8px -2px rgba(30, 37, 57, 0.08);
+
+    /* Chart Colors - Energy/Green palette */
+    --chart-color-1: #44d8a6;           /* Fresh Green */
+    --chart-color-2: #1e2539;           /* Deep Navy */
+    --chart-color-3: #36c294;           /* Dark Green */
+    --chart-color-4: #f59e0b;           /* Amber */
+    --chart-color-5: #2d3a52;           /* Light Navy */
+    --chart-color-6: #10b981;           /* Emerald */
+    --chart-color-7: #06b6d4;           /* Cyan */
+    --chart-color-8: #8b5cf6;           /* Violet */
+    --chart-color-9: #ec4899;           /* Pink */
+    --chart-color-10: #6366f1;          /* Indigo */
+
+    /* Semantic Chart Colors */
+    --chart-success: #44d8a6;
+    --chart-warning: #f59e0b;
+    --chart-danger: #ef4444;
+    --chart-info: #06b6d4;
+    --chart-neutral: #718096;
+
+    /* Chart UI */
+    --chart-bar-gradient-start: #44d8a6;
+    --chart-bar-gradient-end: #36c294;
+    --chart-gauge-progress: #44d8a6;
+}
+
+/* Enpower Dark Mode */
+[data-theme="enpower-dark"] {
+    /* Primary Colors */
+    --primary-color: #44d8a6;           /* Fresh Green stays vibrant */
+    --primary-hover: #5ee3b8;           /* Lighter green on hover */
+    --secondary-color: #3d4a66;         /* Light Navy for dark mode */
+    --secondary-hover: #4d5a76;
+    --accent-color: #fbbf24;
+    --danger-color: #f87171;
+
+    /* Dark Backgrounds */
+    --background: #151a28;              /* Navy 90% */
+    --surface: #1e2539;                 /* Deep Navy */
+    --card-bg: #1e2539;
+
+    /* Light Text on Dark */
+    --text-primary: #fef6f3;            /* Soft Cream */
+    --text-secondary: #d1d5db;
+    --text-color: #fef6f3;
+    --text-muted: #9ca3af;
+
+    /* Borders */
+    --border-color: #2d3a52;
+    --hover-color: rgba(68, 216, 166, 0.15);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 4px 8px -2px rgba(0, 0, 0, 0.3);
+
+    /* Chart Colors - Brighter for dark bg */
+    --chart-color-1: #44d8a6;
+    --chart-color-2: #5a7ac4;           /* Lighter blue */
+    --chart-color-3: #5ee3b8;           /* Bright green */
+    --chart-color-4: #fbbf24;           /* Bright amber */
+    --chart-color-5: #60a5fa;           /* Light blue */
+    --chart-color-6: #34d399;           /* Emerald */
+    --chart-color-7: #22d3ee;           /* Cyan */
+    --chart-color-8: #a78bfa;           /* Violet */
+    --chart-color-9: #f472b6;           /* Pink */
+    --chart-color-10: #818cf8;          /* Indigo */
+
+    --chart-bar-gradient-start: #44d8a6;
+    --chart-bar-gradient-end: #5ee3b8;
+}
+
+/* Enpower Component Overrides */
+[data-theme="enpower"] .btn-primary,
+[data-theme="enpower-dark"] .btn-primary {
+    background-color: #44d8a6;
+    color: #1e2539;
+    font-weight: 600;
+}
+
+[data-theme="enpower"] .btn-primary:hover:not(:disabled),
+[data-theme="enpower-dark"] .btn-primary:hover:not(:disabled) {
+    background-color: #36c294;
+    color: #1e2539;
+    box-shadow: 0 4px 12px rgba(68, 216, 166, 0.4);
+}
+
+[data-theme="enpower"] .btn-secondary {
+    background-color: #1e2539;
+    color: #ffffff;
+}
+
+[data-theme="enpower"] .btn-secondary:hover:not(:disabled) {
+    background-color: #2d3a52;
+}
+
+[data-theme="enpower-dark"] .btn-secondary {
+    background-color: #3d4a66;
+    color: #ffffff;
+}
+
+[data-theme="enpower"] .btn-outline {
+    border-color: #1e2539;
+    color: #1e2539;
+}
+
+[data-theme="enpower"] .btn-outline:hover:not(:disabled) {
+    background-color: #1e2539;
+    color: #ffffff;
+}
+
+/* Enpower Header */
+[data-theme="enpower"] .app-header,
+[data-theme="enpower-dark"] .app-header {
+    background-color: #1e2539;
+    border-bottom-color: #2d3a52;
+}
+
+[data-theme="enpower"] .app-header .header-logo-img,
+[data-theme="enpower-dark"] .app-header .header-logo-img {
+    filter: brightness(0) invert(1);
+}
+
+[data-theme="enpower"] .sidebar-toggle-header,
+[data-theme="enpower-dark"] .sidebar-toggle-header {
+    color: #d1d5db;
+}
+
+[data-theme="enpower"] .sidebar-toggle-header:hover,
+[data-theme="enpower-dark"] .sidebar-toggle-header:hover {
+    background-color: rgba(68, 216, 166, 0.1);
+    color: #44d8a6;
+}
+
+[data-theme="enpower"] .icon-button,
+[data-theme="enpower-dark"] .icon-button {
+    color: #d1d5db;
+}
+
+[data-theme="enpower"] .icon-button:hover,
+[data-theme="enpower-dark"] .icon-button:hover {
+    background-color: rgba(68, 216, 166, 0.1);
+    color: #44d8a6;
+}
+
+[data-theme="enpower"] .user-menu:hover,
+[data-theme="enpower-dark"] .user-menu:hover {
+    background-color: rgba(68, 216, 166, 0.1);
+}
+
+[data-theme="enpower"] .user-name,
+[data-theme="enpower-dark"] .user-name {
+    color: #ffffff;
+}
+
+[data-theme="enpower"] .user-role,
+[data-theme="enpower-dark"] .user-role {
+    color: #9ca3af;
+}
+
+[data-theme="enpower"] .user-avatar,
+[data-theme="enpower-dark"] .user-avatar {
+    background: linear-gradient(135deg, #44d8a6, #36c294);
+    color: #1e2539;
+}
+
+/* Enpower Sidebar */
+[data-theme="enpower"] .sidebar {
+    background-color: #ffffff;
+    border-right-color: #e8e0dc;
+}
+
+[data-theme="enpower-dark"] .sidebar {
+    background-color: #1e2539;
+    border-right-color: #2d3a52;
+}
+
+[data-theme="enpower"] .nav-item.active {
+    background-color: #1e2539;
+    color: #ffffff;
+}
+
+[data-theme="enpower"] .nav-item.active:hover {
+    background-color: #2d3a52;
+}
+
+[data-theme="enpower-dark"] .nav-item.active {
+    background-color: #44d8a6;
+    color: #1e2539;
+}
+
+[data-theme="enpower-dark"] .nav-item.active:hover {
+    background-color: #36c294;
+}
+
+[data-theme="enpower"] .nav-item:hover:not(.active) {
+    background-color: #e6fbf3;
+    color: #1e2539;
+}
+
+[data-theme="enpower-dark"] .nav-item:hover:not(.active) {
+    background-color: rgba(68, 216, 166, 0.15);
+    color: #44d8a6;
+}
+
+/* Enpower Cards with accent */
+[data-theme="enpower"] .card-highlight,
+[data-theme="enpower-dark"] .card-highlight {
+    border-left: 4px solid #44d8a6;
+}
+
+/* Enpower Links */
+[data-theme="enpower"] a {
+    color: #1e2539;
+}
+
+[data-theme="enpower"] a:hover {
+    color: #2d3a52;
+}
+
+[data-theme="enpower-dark"] a {
+    color: #44d8a6;
+}
+
+[data-theme="enpower-dark"] a:hover {
+    color: #5ee3b8;
+}
+
+/* Enpower Focus States */
+[data-theme="enpower"] input:focus,
+[data-theme="enpower"] textarea:focus,
+[data-theme="enpower"] select:focus {
+    border-color: #44d8a6;
+    box-shadow: 0 0 0 3px rgba(68, 216, 166, 0.2);
+}
+
+[data-theme="enpower-dark"] input:focus,
+[data-theme="enpower-dark"] textarea:focus,
+[data-theme="enpower-dark"] select:focus {
+    border-color: #44d8a6;
+    box-shadow: 0 0 0 3px rgba(68, 216, 166, 0.25);
+}
+
+/* Enpower Auth Page */
+[data-theme="enpower"] .auth-container {
+    background: linear-gradient(135deg, #fef6f3 0%, #f5ebe7 100%);
+}
+
+[data-theme="enpower-dark"] .auth-container {
+    background: linear-gradient(135deg, #1e2539 0%, #151a28 100%);
+}
+
+[data-theme="enpower"] .auth-logo h1 {
+    color: #1e2539;
+}
+
+[data-theme="enpower-dark"] .auth-logo h1 {
+    color: #44d8a6;
+}
+
+/* Enpower Alerts */
+[data-theme="enpower"] .alert-info,
+[data-theme="enpower-dark"] .alert-info {
+    background-color: rgba(30, 37, 57, 0.1);
+    color: #1e2539;
+    border-color: rgba(30, 37, 57, 0.2);
+}
+
+[data-theme="enpower"] .alert-success {
+    background-color: rgba(68, 216, 166, 0.15);
+    color: #1e2539;
+    border-color: rgba(68, 216, 166, 0.3);
+}
+
+[data-theme="enpower-dark"] .alert-success {
+    background-color: rgba(68, 216, 166, 0.2);
+    color: #fef6f3;
+    border-color: rgba(68, 216, 166, 0.4);
+}
+
+[data-theme="enpower"] .alert-warning,
+[data-theme="enpower-dark"] .alert-warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #1e2539;
+    border-color: rgba(245, 158, 11, 0.3);
 }
