@@ -19,7 +19,7 @@
 #   SKIP_BUILD=true            - Maven-Build überspringen
 # =============================================================================
 
-set -euo pipefail
+set -eu pipefail
 
 # --- Konfiguration -----------------------------------------------------------
 
