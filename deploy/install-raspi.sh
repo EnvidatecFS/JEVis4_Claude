@@ -23,12 +23,12 @@ set -euo pipefail
 
 # --- Konfiguration -----------------------------------------------------------
 
-DB_NAME="jevis4"
+DB_NAME="jevis"
 DB_USER="jevis"
 DB_PASSWORD="${DB_PASSWORD:-jevis2025}"
-INSTALL_DIR="/opt/jevis4"
-CONFIG_DIR="/etc/jevis4"
-LOG_DIR="/var/log/jevis4"
+INSTALL_DIR="/opt/jevis"
+CONFIG_DIR="/etc/jevis"
+LOG_DIR="/var/log/jevis"
 SERVICE_USER="jevis"
 
 # Java Heap automatisch nach RAM bestimmen
@@ -128,11 +128,11 @@ setup_database() {
 # --- Systembenutzer anlegen --------------------------------------------------
 
 setup_user() {
-    if id "$SERVICE_USER" &>/dev/null; then
+    if id -u "$SERVICE_USER" >/dev/null 2>&1; then
         warn "Benutzer '$SERVICE_USER' existiert bereits"
     else
         log "Erstelle Systembenutzer '$SERVICE_USER'..."
-        useradd -r -s /bin/false "$SERVICE_USER"
+        useradd -r -s /bin/false "$SERVICE_USER" || { warn "useradd fehlgeschlagen, Benutzer existiert evtl. schon"; }
     fi
 
     mkdir -p "$LOG_DIR"
