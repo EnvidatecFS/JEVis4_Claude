@@ -237,13 +237,13 @@ EOF
 install_services() {
     log "Installiere Systemd-Services..."
 
-    # JEVis4 Service - mit angepasstem Heap
+    # JEVis Service - mit angepasstem Heap
     sed "s/-Xms512m -Xmx2g/-Xms${JAVA_XMS} -Xmx${JAVA_XMX}/" \
-        "$INSTALL_DIR/deploy/jevis4.service" \
-        > /etc/systemd/system/jevis4.service
+        "$INSTALL_DIR/deploy/jevis.service" \
+        > /etc/systemd/system/jevis.service
 
     # Worker Service
-    cp "$INSTALL_DIR/deploy/jevis4-worker.service" /etc/systemd/system/
+    cp "$INSTALL_DIR/deploy/jevis-worker.service" /etc/systemd/system/
 
     # Worker-Skript ausführbar machen
     chmod +x "$INSTALL_DIR/deploy/worker.sh"
@@ -252,8 +252,8 @@ install_services() {
     chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR"
 
     systemctl daemon-reload
-    systemctl enable jevis4
-    systemctl enable jevis4-worker
+    systemctl enable jevis
+    systemctl enable jevis-worker
 
     log "Services installiert und aktiviert"
 }
@@ -281,7 +281,7 @@ setup_swap() {
 
 first_start() {
     log "Starte JEVis 4 zum ersten Mal (Datenbank-Schema wird erstellt)..."
-    systemctl start jevis4
+    systemctl start jevis
 
     # Warten bis die Anwendung bereit ist
     log "Warte auf Anwendungsstart (kann 30-90 Sekunden dauern)..."
@@ -291,7 +291,7 @@ first_start() {
         ATTEMPTS=$((ATTEMPTS + 1))
         if [ "$ATTEMPTS" -ge "$MAX_ATTEMPTS" ]; then
             warn "Anwendung nicht innerhalb von ${MAX_ATTEMPTS}s erreichbar"
-            warn "Prüfe Logs mit: sudo journalctl -u jevis4 -n 50"
+            warn "Prüfe Logs mit: sudo journalctl -u jevis -n 50"
             return 1
         fi
         sleep 2
@@ -305,7 +305,7 @@ first_start() {
 
     # Worker starten
     log "Starte Worker..."
-    systemctl start jevis4-worker
+    systemctl start jevis-worker
 
     return 0
 }
@@ -325,12 +325,12 @@ print_summary() {
     echo "  Login:           admin / admin"
     echo ""
     echo "  Services:"
-    echo "    sudo systemctl status jevis4"
-    echo "    sudo systemctl status jevis4-worker"
+    echo "    sudo systemctl status jevis"
+    echo "    sudo systemctl status jevis-worker"
     echo ""
     echo "  Logs:"
-    echo "    sudo journalctl -u jevis4 -f"
-    echo "    sudo journalctl -u jevis4-worker -f"
+    echo "    sudo journalctl -u jevis -f"
+    echo "    sudo journalctl -u jevis-worker -f"
     echo ""
     echo "  Datenbank:"
     echo "    sudo -u postgres psql ${DB_NAME}"

@@ -6,11 +6,11 @@
 # und meldet Ergebnisse zurück. Sendet periodisch Heartbeats.
 #
 # Installation:
-#   chmod +x /opt/jevis4/deploy/worker.sh
-#   sudo cp deploy/jevis4-worker.service /etc/systemd/system/
+#   chmod +x /opt/jevis/deploy/worker.sh
+#   sudo cp deploy/jevis-worker.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
-#   sudo systemctl enable jevis4-worker
-#   sudo systemctl start jevis4-worker
+#   sudo systemctl enable jevis-worker
+#   sudo systemctl start jevis-worker
 # =============================================================================
 
 set -euo pipefail

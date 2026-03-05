@@ -22,8 +22,8 @@ Das Skript [`install-raspi.sh`](install-raspi.sh) installiert und konfiguriert a
 
 ```bash
 # Repository klonen
-git clone <repository-url> /opt/jevis4
-cd /opt/jevis4
+git clone <repository-url> /opt/jevis
+cd /opt/jevis
 
 # Installationsskript ausführen
 chmod +x deploy/install-raspi.sh
@@ -103,16 +103,16 @@ sudo -u postgres psql
 
 ```sql
 CREATE USER jevis WITH PASSWORD 'ein_sicheres_passwort';
-CREATE DATABASE jevis4 OWNER jevis;
-GRANT ALL PRIVILEGES ON DATABASE jevis4 TO jevis;
+CREATE DATABASE jevis OWNER jevis;
+GRANT ALL PRIVILEGES ON DATABASE jevis TO jevis;
 \q
 ```
 
 ### 4. Repository klonen und bauen
 
 ```bash
-sudo git clone <repository-url> /opt/jevis4
-cd /opt/jevis4
+sudo git clone <repository-url> /opt/jevis
+cd /opt/jevis
 
 # Build (dauert auf einem Pi 4 ca. 3-5 Minuten)
 mvn clean package -DskipTests
@@ -122,16 +122,16 @@ mvn clean package -DskipTests
 
 ```bash
 sudo useradd -r -s /bin/false jevis
-sudo mkdir -p /var/log/jevis4
-sudo chown jevis:jevis /var/log/jevis4
-sudo chown -R jevis:jevis /opt/jevis4
+sudo mkdir -p /var/log/jevis
+sudo chown jevis:jevis /var/log/jevis
+sudo chown -R jevis:jevis /opt/jevis
 ```
 
 ### 6. Konfiguration
 
 ```bash
-sudo mkdir -p /etc/jevis4
-sudo nano /etc/jevis4/application.properties
+sudo mkdir -p /etc/jevis
+sudo nano /etc/jevis/application.properties
 ```
 
 Inhalt - **Passwort und Heap-Grösse anpassen**:
@@ -141,7 +141,7 @@ Inhalt - **Passwort und Heap-Grösse anpassen**:
 server.port=8080
 
 # PostgreSQL
-spring.datasource.url=jdbc:postgresql://localhost:5432/jevis4
+spring.datasource.url=jdbc:postgresql://localhost:5432/jevis
 spring.datasource.username=jevis
 spring.datasource.password=ein_sicheres_passwort
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
@@ -173,28 +173,28 @@ jevis.jobs.retry-check-interval-seconds=60
 # Logging
 logging.level.org.jevis=INFO
 logging.level.org.hibernate.SQL=WARN
-logging.file.name=/var/log/jevis4/application.log
+logging.file.name=/var/log/jevis/application.log
 ```
 
 ### 7. Services installieren
 
-Die Service-Dateien liegen im Repository. Bei einem Raspberry Pi mit wenig RAM muss der Heap in `jevis4.service` angepasst werden:
+Die Service-Dateien liegen im Repository. Bei einem Raspberry Pi mit wenig RAM muss der Heap in `jevis.service` angepasst werden:
 
 ```bash
 # Service-Dateien kopieren
-sudo cp /opt/jevis4/deploy/jevis4.service /etc/systemd/system/
-sudo cp /opt/jevis4/deploy/jevis4-worker.service /etc/systemd/system/
+sudo cp /opt/jevis/deploy/jevis.service /etc/systemd/system/
+sudo cp /opt/jevis/deploy/jevis-worker.service /etc/systemd/system/
 
 # Heap anpassen (Beispiel: Pi 4 mit 2 GB RAM)
-sudo sed -i 's/-Xms512m -Xmx2g/-Xms256m -Xmx768m/' /etc/systemd/system/jevis4.service
+sudo sed -i 's/-Xms512m -Xmx2g/-Xms256m -Xmx768m/' /etc/systemd/system/jevis.service
 
 # Worker-Skript ausführbar machen
-chmod +x /opt/jevis4/deploy/worker.sh
+chmod +x /opt/jevis/deploy/worker.sh
 
 # Services aktivieren
 sudo systemctl daemon-reload
-sudo systemctl enable jevis4
-sudo systemctl enable jevis4-worker
+sudo systemctl enable jevis
+sudo systemctl enable jevis-worker
 ```
 
 **Empfohlene Heap-Werte:**
@@ -210,23 +210,23 @@ sudo systemctl enable jevis4-worker
 
 ```bash
 # Anwendung starten
-sudo systemctl start jevis4
+sudo systemctl start jevis
 
 # Logs beobachten (warten bis "Started App" erscheint)
-sudo journalctl -u jevis4 -f
+sudo journalctl -u jevis -f
 ```
 
 Nach erfolgreichem Start die Schema-Verwaltung umstellen und Worker starten:
 
 ```bash
 # ddl-auto auf update umstellen
-sudo sed -i 's/ddl-auto=create/ddl-auto=update/' /etc/jevis4/application.properties
+sudo sed -i 's/ddl-auto=create/ddl-auto=update/' /etc/jevis/application.properties
 
 # Neustart mit neuer Konfiguration
-sudo systemctl restart jevis4
+sudo systemctl restart jevis
 
 # Worker starten
-sudo systemctl start jevis4-worker
+sudo systemctl start jevis-worker
 ```
 
 ---
@@ -239,14 +239,14 @@ Ein Pi kann auch ohne eigene Datenbank als Worker an einem zentralen JEVis-Serve
 sudo apt install -y curl python3
 
 # Repository klonen (nur für das Worker-Skript)
-git clone <repository-url> /opt/jevis4
+git clone <repository-url> /opt/jevis
 
 # Worker-Skript ausführbar machen
-chmod +x /opt/jevis4/deploy/worker.sh
+chmod +x /opt/jevis/deploy/worker.sh
 
 # Service installieren mit Verweis auf den zentralen Server
-sudo cp /opt/jevis4/deploy/jevis4-worker.service /etc/systemd/system/
-sudo systemctl edit jevis4-worker
+sudo cp /opt/jevis/deploy/jevis-worker.service /etc/systemd/system/
+sudo systemctl edit jevis-worker
 ```
 
 Server-URL als Umgebungsvariable setzen:
@@ -260,8 +260,8 @@ Environment="WORKER_NAME=pi-worker-keller"
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable jevis4-worker
-sudo systemctl start jevis4-worker
+sudo systemctl enable jevis-worker
+sudo systemctl start jevis-worker
 ```
 
 ---
@@ -270,20 +270,20 @@ sudo systemctl start jevis4-worker
 
 ```bash
 # Status
-sudo systemctl status jevis4
-sudo systemctl status jevis4-worker
+sudo systemctl status jevis
+sudo systemctl status jevis-worker
 
 # Stoppen / Starten / Neustarten
-sudo systemctl stop jevis4
-sudo systemctl start jevis4
-sudo systemctl restart jevis4
+sudo systemctl stop jevis
+sudo systemctl start jevis
+sudo systemctl restart jevis
 
 # Logs (live)
-sudo journalctl -u jevis4 -f
-sudo journalctl -u jevis4-worker -f
+sudo journalctl -u jevis -f
+sudo journalctl -u jevis-worker -f
 
 # Logs der letzten Stunde
-sudo journalctl -u jevis4 --since "1 hour ago"
+sudo journalctl -u jevis --since "1 hour ago"
 ```
 
 ---
@@ -364,7 +364,7 @@ sudo systemctl start postgresql
 ## Deinstallation
 
 ```bash
-chmod +x /opt/jevis4/deploy/uninstall-raspi.sh
+chmod +x /opt/jevis/deploy/uninstall-raspi.sh
 sudo ./deploy/uninstall-raspi.sh
 
 # Mit Datenbank-Löschung (ACHTUNG: Datenverlust!)
@@ -379,12 +379,12 @@ sudo DROP_DB=true ./deploy/uninstall-raspi.sh
 
 ```bash
 # Logs prüfen
-sudo journalctl -u jevis4 -n 100 --no-pager
+sudo journalctl -u jevis -n 100 --no-pager
 
 # Häufige Ursachen:
 # - PostgreSQL läuft nicht: sudo systemctl status postgresql
-# - Falsches DB-Passwort: /etc/jevis4/application.properties prüfen
-# - Zu wenig RAM/Heap: -Xmx in jevis4.service anpassen
+# - Falsches DB-Passwort: /etc/jevis/application.properties prüfen
+# - Zu wenig RAM/Heap: -Xmx in jevis.service anpassen
 # - Port belegt: sudo ss -tlnp | grep 8080
 ```
 
@@ -409,7 +409,7 @@ MAVEN_OPTS="-Xmx512m" mvn clean package -DskipTests
 curl -s http://localhost:8080/login
 
 # Worker-Logs
-sudo journalctl -u jevis4-worker -f
+sudo journalctl -u jevis-worker -f
 
 # Manueller Test der Worker-Registrierung
 curl -X POST http://localhost:8080/api/workers/register \
@@ -425,6 +425,6 @@ curl -X POST http://localhost:8080/api/workers/register \
 |-------|-------------|
 | [`install-raspi.sh`](install-raspi.sh) | Automatisches Installationsskript |
 | [`uninstall-raspi.sh`](uninstall-raspi.sh) | Deinstallationsskript |
-| [`jevis4.service`](jevis4.service) | Systemd-Service für die Anwendung |
-| [`jevis4-worker.service`](jevis4-worker.service) | Systemd-Service für den Worker |
+| [`jevis.service`](jevis.service) | Systemd-Service für die Anwendung |
+| [`jevis-worker.service`](jevis-worker.service) | Systemd-Service für den Worker |
 | [`worker.sh`](worker.sh) | Worker-Skript mit Polling-Loop |

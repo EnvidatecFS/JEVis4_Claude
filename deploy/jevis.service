@@ -1,5 +1,5 @@
 [Unit]
-Description=JEVis 4 Data Management Platform
+Description=JEVis Data Management Platform
 After=network.target postgresql.service
 Requires=postgresql.service
 
@@ -7,12 +7,12 @@ Requires=postgresql.service
 Type=simple
 User=jevis
 Group=jevis
-WorkingDirectory=/opt/jevis4
+WorkingDirectory=/opt/jevis
 
 ExecStart=/usr/bin/java \
   -Xms512m -Xmx2g \
   -jar target/JEVis4_Claude-1.0-SNAPSHOT.jar \
-  --spring.config.additional-location=file:/etc/jevis4/application.properties
+  --spring.config.additional-location=file:/etc/jevis/application.properties
 
 Restart=always
 RestartSec=10
@@ -24,8 +24,8 @@ StandardError=journal
 # Sicherheits-Härtung
 NoNewPrivileges=true
 ProtectSystem=strict
-ReadWritePaths=/var/log/jevis4
-ReadOnlyPaths=/opt/jevis4 /etc/jevis4
+ReadWritePaths=/var/log/jevis
+ReadOnlyPaths=/opt/jevis /etc/jevis
 
 [Install]
 WantedBy=multi-user.target

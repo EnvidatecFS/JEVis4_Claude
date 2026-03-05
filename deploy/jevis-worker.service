@@ -1,12 +1,12 @@
 [Unit]
-Description=JEVis 4 Worker
-After=network.target jevis4.service
+Description=JEVis Worker
+After=network.target jevis.service
 
 [Service]
 Type=simple
 User=jevis
 Group=jevis
-ExecStart=/opt/jevis4/deploy/worker.sh
+ExecStart=/opt/jevis/deploy/worker.sh
 Restart=always
 RestartSec=15
 StandardOutput=journal

@@ -47,8 +47,8 @@ sudo -u postgres psql
 
 ```sql
 CREATE USER jevis WITH PASSWORD 'ein_sicheres_passwort';
-CREATE DATABASE jevis4 OWNER jevis;
-GRANT ALL PRIVILEGES ON DATABASE jevis4 TO jevis;
+CREATE DATABASE jevis OWNER jevis;
+GRANT ALL PRIVILEGES ON DATABASE jevis TO jevis;
 \q
 ```
 
@@ -61,7 +61,7 @@ sudo nano /etc/postgresql/14/main/postgresql.conf
 
 # pg_hba.conf - Zugriff erlauben (IP-Bereich anpassen!)
 sudo nano /etc/postgresql/14/main/pg_hba.conf
-# host    jevis4    jevis    10.0.0.0/24    scram-sha-256
+# host    jevis    jevis    10.0.0.0/24    scram-sha-256
 
 sudo systemctl restart postgresql
 ```
@@ -70,8 +70,8 @@ sudo systemctl restart postgresql
 
 ```bash
 # Repository klonen
-git clone <repository-url> /opt/jevis4
-cd /opt/jevis4
+git clone <repository-url> /opt/jevis
+cd /opt/jevis
 
 # Produktiv-Build (ohne Tests)
 mvn clean package -DskipTests
@@ -83,8 +83,8 @@ Die ausfuhrbare JAR liegt unter `target/JEVis4_Claude-1.0-SNAPSHOT.jar`.
 
 ```bash
 # Erstelle Produktions-Konfiguration
-sudo mkdir -p /etc/jevis4
-sudo nano /etc/jevis4/application.properties
+sudo mkdir -p /etc/jevis
+sudo nano /etc/jevis/application.properties
 ```
 
 ```properties
@@ -92,7 +92,7 @@ sudo nano /etc/jevis4/application.properties
 server.port=8080
 
 # PostgreSQL Datenbank
-spring.datasource.url=jdbc:postgresql://localhost:5432/jevis4
+spring.datasource.url=jdbc:postgresql://localhost:5432/jevis
 spring.datasource.username=jevis
 spring.datasource.password=ein_sicheres_passwort
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
@@ -124,7 +124,7 @@ jevis.jobs.retry-check-interval-seconds=60
 # Logging
 logging.level.org.jevis=INFO
 logging.level.org.hibernate.SQL=WARN
-logging.file.name=/var/log/jevis4/application.log
+logging.file.name=/var/log/jevis/application.log
 ```
 
 ### 5. Systemd-Service einrichten
@@ -133,30 +133,30 @@ Benutzer fur den Dienst anlegen:
 
 ```bash
 sudo useradd -r -s /bin/false jevis
-sudo mkdir -p /var/log/jevis4
-sudo chown jevis:jevis /var/log/jevis4
+sudo mkdir -p /var/log/jevis
+sudo chown jevis:jevis /var/log/jevis
 ```
 
-Die Service-Datei liegt im Repository unter [`deploy/jevis4.service`](deploy/jevis4.service). Installieren:
+Die Service-Datei liegt im Repository unter [`deploy/jevis.service`](deploy/jevis.service). Installieren:
 
 ```bash
-sudo cp /opt/jevis4/deploy/jevis4.service /etc/systemd/system/
+sudo cp /opt/jevis/deploy/jevis.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable jevis4
-sudo systemctl start jevis4
+sudo systemctl enable jevis
+sudo systemctl start jevis
 
 # Status prüfen
-sudo systemctl status jevis4
+sudo systemctl status jevis
 
 # Logs ansehen
-sudo journalctl -u jevis4 -f
+sudo journalctl -u jevis -f
 ```
 
 ### 6. Nginx als Reverse Proxy (empfohlen)
 
 ```bash
 sudo apt install -y nginx
-sudo nano /etc/nginx/sites-available/jevis4
+sudo nano /etc/nginx/sites-available/jevis
 ```
 
 ```nginx
@@ -179,7 +179,7 @@ server {
 ```
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/jevis4 /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/jevis /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl enable nginx
@@ -255,23 +255,23 @@ Installation:
 
 ```bash
 # Skript ausführbar machen
-chmod +x /opt/jevis4/deploy/worker.sh
+chmod +x /opt/jevis/deploy/worker.sh
 
-# Systemd-Service installieren (siehe deploy/jevis4-worker.service)
-sudo cp /opt/jevis4/deploy/jevis4-worker.service /etc/systemd/system/
+# Systemd-Service installieren (siehe deploy/jevis-worker.service)
+sudo cp /opt/jevis/deploy/jevis-worker.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable jevis4-worker
-sudo systemctl start jevis4-worker
+sudo systemctl enable jevis-worker
+sudo systemctl start jevis-worker
 
 # Status und Logs
-sudo systemctl status jevis4-worker
-sudo journalctl -u jevis4-worker -f
+sudo systemctl status jevis-worker
+sudo journalctl -u jevis-worker -f
 ```
 
 Um Umgebungsvariablen fur den Service zu setzen:
 
 ```bash
-sudo systemctl edit jevis4-worker
+sudo systemctl edit jevis-worker
 ```
 
 ```ini
@@ -334,8 +334,8 @@ Beim **allerersten Start** muss `spring.jpa.hibernate.ddl-auto=create` gesetzt s
 **Nach dem ersten Start** die Einstellung auf `update` ändern und den Dienst neu starten:
 
 ```bash
-sudo sed -i 's/ddl-auto=create/ddl-auto=update/' /etc/jevis4/application.properties
-sudo systemctl restart jevis4
+sudo sed -i 's/ddl-auto=create/ddl-auto=update/' /etc/jevis/application.properties
+sudo systemctl restart jevis
 ```
 
 ---
@@ -346,31 +346,31 @@ sudo systemctl restart jevis4
 
 ```bash
 # PostgreSQL Backup
-sudo -u postgres pg_dump jevis4 > /backup/jevis4_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump jevis > /backup/jevis_$(date +%Y%m%d).sql
 
 # Wiederherstellen
-sudo -u postgres psql jevis4 < /backup/jevis4_20260305.sql
+sudo -u postgres psql jevis < /backup/jevis_20260305.sql
 ```
 
 ### Logs
 
 ```bash
 # Anwendungs-Logs
-sudo journalctl -u jevis4 -f
-sudo journalctl -u jevis4-worker -f
+sudo journalctl -u jevis -f
+sudo journalctl -u jevis-worker -f
 
 # Log-Datei (wenn konfiguriert)
-tail -f /var/log/jevis4/application.log
+tail -f /var/log/jevis/application.log
 ```
 
 ### Updates
 
 ```bash
-cd /opt/jevis4
+cd /opt/jevis
 git pull
 mvn clean package -DskipTests
-sudo systemctl restart jevis4
-sudo systemctl restart jevis4-worker
+sudo systemctl restart jevis
+sudo systemctl restart jevis-worker
 ```
 
 ---
@@ -381,8 +381,8 @@ Alle Dateien fur den Produktivbetrieb liegen im Verzeichnis [`deploy/`](deploy/)
 
 | Datei | Beschreibung |
 |-------|-------------|
-| [`jevis4.service`](deploy/jevis4.service) | Systemd-Service fur die JEVis-Anwendung |
-| [`jevis4-worker.service`](deploy/jevis4-worker.service) | Systemd-Service fur den Worker |
+| [`jevis.service`](deploy/jevis.service) | Systemd-Service fur die JEVis-Anwendung |
+| [`jevis-worker.service`](deploy/jevis-worker.service) | Systemd-Service fur den Worker |
 | [`worker.sh`](deploy/worker.sh) | Worker-Skript mit Polling-Loop und Heartbeat |
 
 ---
@@ -429,5 +429,5 @@ mvn test -Dtest=AppTest
 
 # Zugriff
 # http://localhost:8080 (Login: admin/admin)
-# http://localhost:8080/h2-console (JDBC URL: jdbc:h2:mem:jevis4)
+# http://localhost:8080/h2-console (JDBC URL: jdbc:h2:mem:jevis)
 ```
