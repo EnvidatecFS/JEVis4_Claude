@@ -132,8 +132,14 @@ setup_user() {
         warn "Benutzer '$SERVICE_USER' existiert bereits"
     else
         log "Erstelle Systembenutzer '$SERVICE_USER'..."
-        useradd -r -s /bin/false "$SERVICE_USER" || { warn "useradd fehlgeschlagen, Benutzer existiert evtl. schon"; }
+        useradd -r -m -s /bin/false "$SERVICE_USER" || { warn "useradd fehlgeschlagen, Benutzer existiert evtl. schon"; }
     fi
+
+    # Maven braucht ~/.m2/repository
+    local JEVIS_HOME
+    JEVIS_HOME=$(eval echo "~$SERVICE_USER")
+    mkdir -p "$JEVIS_HOME/.m2"
+    chown -R "$SERVICE_USER:$SERVICE_USER" "$JEVIS_HOME/.m2"
 
     mkdir -p "$LOG_DIR"
     chown "$SERVICE_USER:$SERVICE_USER" "$LOG_DIR"
