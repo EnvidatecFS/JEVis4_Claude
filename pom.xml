@@ -82,6 +82,12 @@
       <version>2.3.0</version>
     </dependency>
 
+    <!-- Spring Boot Starter Quartz -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-quartz</artifactId>
+    </dependency>
+
     <!-- Spring Boot Starter Test -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

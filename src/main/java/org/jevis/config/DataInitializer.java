@@ -2,8 +2,12 @@ package org.jevis.config;
 
 import org.jevis.model.*;
 import org.jevis.repository.CsrActionRepository;
+import org.jevis.repository.JobRepository;
 import org.jevis.repository.MeasurementRepository;
+import org.jevis.repository.NodeRedDataPointRepository;
+import org.jevis.repository.NodeRedDeviceRepository;
 import org.jevis.repository.SensorRepository;
+import org.jevis.repository.WorkerPoolRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -32,12 +36,23 @@ public class DataInitializer implements CommandLineRunner {
     private final SensorRepository sensorRepository;
     private final MeasurementRepository measurementRepository;
     private final CsrActionRepository csrActionRepository;
+    private final WorkerPoolRepository workerPoolRepository;
+    private final JobRepository jobRepository;
+    private final NodeRedDeviceRepository nodeRedDeviceRepository;
+    private final NodeRedDataPointRepository nodeRedDataPointRepository;
     private final Random random = new Random(42); // Fixed seed for reproducible data
 
-    public DataInitializer(SensorRepository sensorRepository, MeasurementRepository measurementRepository, CsrActionRepository csrActionRepository) {
+    public DataInitializer(SensorRepository sensorRepository, MeasurementRepository measurementRepository,
+                            CsrActionRepository csrActionRepository, WorkerPoolRepository workerPoolRepository,
+                            JobRepository jobRepository, NodeRedDeviceRepository nodeRedDeviceRepository,
+                            NodeRedDataPointRepository nodeRedDataPointRepository) {
         this.sensorRepository = sensorRepository;
         this.measurementRepository = measurementRepository;
         this.csrActionRepository = csrActionRepository;
+        this.workerPoolRepository = workerPoolRepository;
+        this.jobRepository = jobRepository;
+        this.nodeRedDeviceRepository = nodeRedDeviceRepository;
+        this.nodeRedDataPointRepository = nodeRedDataPointRepository;
     }
 
     @Override
@@ -52,6 +67,8 @@ public class DataInitializer implements CommandLineRunner {
             initializeMeasurements(sensors);
 
             initializeCsrActions();
+            initializeJobSystem();
+            initializeNodeRedDevices(sensors);
 
             log.info("Database initialization complete");
         } else {
@@ -393,6 +410,124 @@ public class DataInitializer implements CommandLineRunner {
 
         csrActionRepository.saveAll(actions);
         log.info("Created {} CSR actions", actions.size());
+    }
+
+    private void initializeJobSystem() {
+        if (workerPoolRepository.count() > 0) {
+            return;
+        }
+
+        // Create Worker Pools
+        WorkerPool defaultPool = new WorkerPool("default-pool", "Standard-Pool für allgemeine Jobs", true);
+        defaultPool.setMaxConcurrentJobs(10);
+        defaultPool = workerPoolRepository.save(defaultPool);
+
+        WorkerPool fetchPool = new WorkerPool("data-fetch-pool", "Pool für Daten-Import Jobs", false);
+        fetchPool.setMaxConcurrentJobs(5);
+        fetchPool = workerPoolRepository.save(fetchPool);
+
+        WorkerPool calcPool = new WorkerPool("calculation-pool", "Pool für Berechnungs-Jobs", false);
+        calcPool.setMaxConcurrentJobs(3);
+        calcPool = workerPoolRepository.save(calcPool);
+
+        log.info("Created {} worker pools", workerPoolRepository.count());
+
+        // Create sample Jobs
+        List<Job> jobs = new ArrayList<>();
+
+        Job job1 = new Job();
+        job1.setJobName("Messdaten-Import Station Ost");
+        job1.setJobType(JobType.DATA_FETCH);
+        job1.setPriority(JobPriority.HIGH);
+        job1.setStatus(JobStatus.COMPLETED);
+        job1.setWorkerPool(fetchPool);
+        job1.setJobParameters("{\"stationId\": \"EAST-01\", \"url\": \"https://api.example.com/data\"}");
+        job1.setCreatedBy("admin");
+        job1.setOnSuccessJobType(JobType.CALCULATION);
+        job1.setOnSuccessJobParams("{\"calculationType\": \"daily-yield\"}");
+        jobs.add(job1);
+
+        Job job2 = new Job();
+        job2.setJobName("Tägliche Ertragsberechnung");
+        job2.setJobType(JobType.CALCULATION);
+        job2.setPriority(JobPriority.NORMAL);
+        job2.setStatus(JobStatus.QUEUED);
+        job2.setWorkerPool(calcPool);
+        job2.setJobParameters("{\"calculationType\": \"daily-yield\", \"period\": \"2024-01\"}");
+        job2.setCreatedBy("admin");
+        job2.setScheduledFor(Instant.now());
+        jobs.add(job2);
+
+        Job job3 = new Job();
+        job3.setJobName("Monatsbericht generieren");
+        job3.setJobType(JobType.REPORT_GENERATION);
+        job3.setPriority(JobPriority.LOW);
+        job3.setStatus(JobStatus.CREATED);
+        job3.setWorkerPool(defaultPool);
+        job3.setJobParameters("{\"reportType\": \"monthly\", \"month\": \"2024-01\"}");
+        job3.setCreatedBy("admin");
+        jobs.add(job3);
+
+        Job job4 = new Job();
+        job4.setJobName("Datenbereinigung ältere Messwerte");
+        job4.setJobType(JobType.DATA_CLEANUP);
+        job4.setPriority(JobPriority.LOW);
+        job4.setStatus(JobStatus.FAILED);
+        job4.setRetryCount(2);
+        job4.setWorkerPool(defaultPool);
+        job4.setCreatedBy("admin");
+        jobs.add(job4);
+
+        Job job5 = new Job();
+        job5.setJobName("Stündlicher Daten-Import (Cron)");
+        job5.setJobType(JobType.DATA_FETCH);
+        job5.setPriority(JobPriority.NORMAL);
+        job5.setStatus(JobStatus.CREATED);
+        job5.setIsRecurring(true);
+        job5.setCronExpression("0 0 * * * ?");
+        job5.setWorkerPool(fetchPool);
+        job5.setCreatedBy("system");
+        jobs.add(job5);
+
+        jobRepository.saveAll(jobs);
+        log.info("Created {} sample jobs", jobs.size());
+    }
+
+    private void initializeNodeRedDevices(List<Sensor> sensors) {
+        if (nodeRedDeviceRepository.count() > 0) {
+            return;
+        }
+
+        // Create demo Node-Red device
+        NodeRedDevice device = new NodeRedDevice();
+        device.setDeviceName("Schuby Hauptzähler");
+        device.setApiUrl("http://schubyhh.selfhost.bz:3000/api/data");
+        device.setUsername("");
+        device.setPassword("");
+        device.setDefaultLimit(1000);
+        device.setIsActive(true);
+        device = nodeRedDeviceRepository.save(device);
+
+        // Create data point mappings for existing sensors
+        if (sensors.size() >= 2) {
+            NodeRedDataPoint dp1 = new NodeRedDataPoint();
+            dp1.setDevice(device);
+            dp1.setSensor(sensors.get(0)); // PV_INV_001
+            dp1.setRemoteId("fbf2f46773a02bbf");
+            dp1.setRemoteName("Hauptzähler2Energy");
+            dp1.setIsActive(true);
+            nodeRedDataPointRepository.save(dp1);
+
+            NodeRedDataPoint dp2 = new NodeRedDataPoint();
+            dp2.setDevice(device);
+            dp2.setSensor(sensors.get(5)); // PV_ENE_001 energy sensor
+            dp2.setRemoteId("a1b2c3d4e5f6g7h8");
+            dp2.setRemoteName("Energiezähler Gesamt");
+            dp2.setIsActive(true);
+            nodeRedDataPointRepository.save(dp2);
+        }
+
+        log.info("Created {} Node-Red devices with data points", nodeRedDeviceRepository.count());
     }
 
     private CsrAction createCsrAction(String title, String description, CsrCategory category,

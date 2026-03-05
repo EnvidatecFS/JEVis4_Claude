@@ -24,6 +24,7 @@ public class SecurityConfig {
                 .requestMatchers("/login", "/register", "/forgot-password").permitAll()
                 .requestMatchers("/h2-console/**").permitAll() // Allow H2 console access
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/webjars/**").permitAll()
+                .requestMatchers("/api/workers/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -41,7 +42,7 @@ public class SecurityConfig {
             )
             // Disable CSRF for H2 console and logout
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**", "/logout", "/v3/api-docs/**")
+                .ignoringRequestMatchers("/h2-console/**", "/logout", "/v3/api-docs/**", "/api/workers/**")
             )
             .headers(headers -> headers
                 .frameOptions(frame -> frame.sameOrigin())
