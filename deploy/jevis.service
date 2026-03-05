@@ -24,6 +24,7 @@ StandardError=journal
 # Sicherheits-Härtung
 NoNewPrivileges=true
 ProtectSystem=strict
+PrivateTmp=true
 ReadWritePaths=/var/log/jevis
 ReadOnlyPaths=/opt/jevis /etc/jevis
 
