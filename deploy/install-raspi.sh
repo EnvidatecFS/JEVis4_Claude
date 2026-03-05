@@ -169,6 +169,7 @@ build_application() {
     fi
 
     log "Baue JEVis 4 (das kann auf einem Raspberry Pi einige Minuten dauern)..."
+    chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR"
     cd "$INSTALL_DIR"
     sudo -u "$SERVICE_USER" mvn clean package -DskipTests -q 2>&1 || \
         mvn clean package -DskipTests -q 2>&1

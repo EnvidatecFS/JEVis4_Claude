@@ -8,8 +8,8 @@
 # Verwendung:
 #   sudo ./deploy/uninstall-raspi.sh
 #
-# Optionale Umgebungsvariablen:
-#   DROP_DB=true   - Datenbank ebenfalls löschen (ACHTUNG: Datenverlust!)
+# Fragt interaktiv ob die Datenbank gelöscht werden soll.
+# Für nicht-interaktive Nutzung: DROP_DB=true sudo ./deploy/uninstall-raspi.sh
 # =============================================================================
 
 set -eu
@@ -60,14 +60,29 @@ if id jevis &>/dev/null; then
     userdel jevis 2>/dev/null || true
 fi
 
-# Datenbank löschen (nur wenn explizit gewünscht)
-if [ "${DROP_DB:-false}" = "true" ]; then
+# Datenbank löschen
+if [ "${DROP_DB:-}" = "true" ]; then
+    # Non-interaktiv via Umgebungsvariable
+    DROP_CONFIRMED=true
+else
+    echo ""
+    echo -e "${YELLOW}Soll die PostgreSQL-Datenbank 'jevis' ebenfalls gelöscht werden?${NC}"
+    echo -e "${RED}ACHTUNG: Alle Messdaten gehen dabei unwiderruflich verloren!${NC}"
+    printf "Datenbank löschen? [j/N]: "
+    read -r ANSWER
+    case "$ANSWER" in
+        j|J|ja|Ja|JA) DROP_CONFIRMED=true ;;
+        *) DROP_CONFIRMED=false ;;
+    esac
+fi
+
+if [ "$DROP_CONFIRMED" = "true" ]; then
     warn "Lösche Datenbank 'jevis'..."
     sudo -u postgres psql -c "DROP DATABASE IF EXISTS jevis;" 2>/dev/null || true
     sudo -u postgres psql -c "DROP USER IF EXISTS jevis;" 2>/dev/null || true
     log "Datenbank gelöscht"
 else
-    warn "Datenbank 'jevis' bleibt erhalten (DROP_DB=true zum Löschen)"
+    log "Datenbank 'jevis' bleibt erhalten"
 fi
 
 echo ""
