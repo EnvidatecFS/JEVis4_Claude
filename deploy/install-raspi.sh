@@ -238,7 +238,7 @@ logging.level.org.hibernate.SQL=WARN
 logging.file.name=${LOG_DIR}/application.log
 EOF
 
-    chown -R root:root "$CONFIG_DIR"
+    chown -R root:"$SERVICE_USER" "$CONFIG_DIR"
     chmod 640 "$CONFIG_DIR/application.properties"
 
     log "Konfiguration erstellt: $CONFIG_DIR/application.properties"
