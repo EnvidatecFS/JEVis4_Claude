@@ -23,10 +23,8 @@ StandardError=journal
 
 # Sicherheits-Härtung
 NoNewPrivileges=true
-ProtectSystem=strict
+ProtectSystem=full
 PrivateTmp=true
-ReadWritePaths=/var/log/jevis /opt/jevis/jte-classes
-ReadOnlyPaths=/etc/jevis
 
 [Install]
 WantedBy=multi-user.target
