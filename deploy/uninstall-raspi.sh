@@ -12,7 +12,7 @@
 #   DROP_DB=true   - Datenbank ebenfalls löschen (ACHTUNG: Datenverlust!)
 # =============================================================================
 
-set -euo pipefail
+set -eu
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
