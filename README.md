@@ -69,8 +69,8 @@ sudo systemctl restart postgresql
 ### 3. Anwendung bauen
 
 ```bash
-# Repository klonen
-git clone <repository-url> /opt/jevis
+# Repository klonen (erfordert sudo, da /opt/ nur für root schreibbar ist)
+sudo git clone https://github.com/EnvidatecFS/JEVis4_Claude.git /opt/jevis
 cd /opt/jevis
 
 # Produktiv-Build (ohne Tests)

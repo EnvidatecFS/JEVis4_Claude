@@ -21,12 +21,12 @@ Anleitung zur Installation von JEVis 4 auf einem Raspberry Pi als Dauerbetrieb-S
 Das Skript [`install-raspi.sh`](install-raspi.sh) installiert und konfiguriert alles automatisch:
 
 ```bash
-# Repository klonen
-git clone <repository-url> /opt/jevis
+# Repository klonen (erfordert sudo, da /opt/ nur für root schreibbar ist)
+sudo git clone https://github.com/EnvidatecFS/JEVis4_Claude.git /opt/jevis
 cd /opt/jevis
 
 # Installationsskript ausführen
-chmod +x deploy/install-raspi.sh
+sudo chmod +x deploy/install-raspi.sh
 sudo ./deploy/install-raspi.sh
 ```
 
@@ -111,7 +111,7 @@ GRANT ALL PRIVILEGES ON DATABASE jevis TO jevis;
 ### 4. Repository klonen und bauen
 
 ```bash
-sudo git clone <repository-url> /opt/jevis
+sudo git clone https://github.com/EnvidatecFS/JEVis4_Claude.git /opt/jevis
 cd /opt/jevis
 
 # Build (dauert auf einem Pi 4 ca. 3-5 Minuten)
@@ -239,7 +239,7 @@ Ein Pi kann auch ohne eigene Datenbank als Worker an einem zentralen JEVis-Serve
 sudo apt install -y curl python3
 
 # Repository klonen (nur für das Worker-Skript)
-git clone <repository-url> /opt/jevis
+sudo git clone https://github.com/EnvidatecFS/JEVis4_Claude.git /opt/jevis
 
 # Worker-Skript ausführbar machen
 chmod +x /opt/jevis/deploy/worker.sh
