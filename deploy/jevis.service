@@ -25,8 +25,8 @@ StandardError=journal
 NoNewPrivileges=true
 ProtectSystem=strict
 PrivateTmp=true
-ReadWritePaths=/var/log/jevis
-ReadOnlyPaths=/opt/jevis /etc/jevis
+ReadWritePaths=/var/log/jevis /opt/jevis/jte-classes
+ReadOnlyPaths=/etc/jevis
 
 [Install]
 WantedBy=multi-user.target

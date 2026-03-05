@@ -217,8 +217,8 @@ spring.sql.init.mode=never
 # H2 deaktivieren
 spring.h2.console.enabled=false
 
-# JTE Templates
-gg.jte.development-mode=false
+# JTE Templates (development-mode=true für On-the-fly Kompilierung)
+gg.jte.development-mode=true
 gg.jte.use-precompiled-templates=false
 
 # Quartz Scheduler
