@@ -132,7 +132,18 @@ setup_user() {
         warn "Benutzer '$SERVICE_USER' existiert bereits"
     else
         log "Erstelle Systembenutzer '$SERVICE_USER'..."
-        useradd -r -m -s /bin/false "$SERVICE_USER" || { warn "useradd fehlgeschlagen, Benutzer existiert evtl. schon"; }
+        # Falls die Gruppe schon existiert (z.B. von früherer Installation),
+        # muss useradd mit -g aufgerufen werden
+        if getent group "$SERVICE_USER" >/dev/null 2>&1; then
+            useradd -r -m -s /bin/false -g "$SERVICE_USER" "$SERVICE_USER"
+        else
+            useradd -r -m -s /bin/false "$SERVICE_USER"
+        fi
+    fi
+
+    # Prüfen ob der Benutzer jetzt existiert
+    if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
+        error "Benutzer '$SERVICE_USER' konnte nicht angelegt werden"
     fi
 
     # Maven braucht ~/.m2/repository
