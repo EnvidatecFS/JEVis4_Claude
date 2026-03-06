@@ -13,6 +13,17 @@
         <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
 
+    <!-- Tab Navigation -->
+    <div class="modal-tabs">
+        <button type="button" class="modal-tab modal-tab-active" id="tab-settings"
+                onclick="switchModalTab('settings')">Einstellungen</button>
+        <button type="button" class="modal-tab" id="tab-measurements"
+                onclick="switchModalTab('measurements')">Messwerte</button>
+    </div>
+
+    <!-- Tab: Einstellungen -->
+    <div id="panel-settings">
+
     @if(success != null)
         @if(success)
             <div class="alert alert-success">${message}</div>
@@ -51,7 +62,7 @@
                            placeholder="z.B. power, voltage, temperature">
                     <datalist id="measurementTypeList">
                         @for(String mt : measurementTypes)
-                            <option value="${mt}">
+                            <option value="${mt}"></option>
                         @endfor
                     </datalist>
                 </div>
@@ -73,8 +84,8 @@
                 <div class="form-group">
                     <label for="isActive">Status</label>
                     <select id="isActive" name="isActive">
-                        <option value="true" ${sensor.getIsActive() ? "selected" : ""}>Aktiv</option>
-                        <option value="false" ${!sensor.getIsActive() ? "selected" : ""}>Inaktiv</option>
+                        <option value="true" selected="${sensor.getIsActive()}">Aktiv</option>
+                        <option value="false" selected="${!sensor.getIsActive()}">Inaktiv</option>
                     </select>
                 </div>
             </div>
@@ -114,9 +125,42 @@
             <button type="submit" class="btn btn-primary">Speichern</button>
         </div>
     </form>
+
+    </div><!-- end panel-settings -->
+
+    <!-- Tab: Messwerte -->
+    <div id="panel-measurements" style="display:none;">
+        <div id="measurements-list"
+             hx-get="/sensors/${sensor.getId()}/measurements"
+             hx-trigger="revealed"
+             hx-swap="innerHTML">
+            <div style="padding: var(--spacing-lg); text-align: center; color: var(--text-secondary);">Lade Messwerte...</div>
+        </div>
+    </div>
+
 </div>
 
 <style>
+    .modal-tabs {
+        display: flex;
+        border-bottom: 2px solid var(--border-color);
+        padding: 0 var(--spacing-lg);
+    }
+    .modal-tab {
+        background: none;
+        border: none;
+        padding: var(--spacing-md) var(--spacing-lg);
+        cursor: pointer;
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .modal-tab:hover { color: var(--primary-color); }
+    .modal-tab-active { color: var(--primary-color) !important; border-bottom-color: var(--primary-color) !important; }
+
     .modal-backdrop {
         position: fixed;
         top: 0;
@@ -135,7 +179,7 @@
         border-radius: var(--radius-xl);
         box-shadow: var(--shadow-lg);
         width: 90%;
-        max-width: 600px;
+        max-width: 1200px;
         max-height: 90vh;
         overflow-y: auto;
         z-index: 1001;
@@ -194,11 +238,19 @@
 <script>
     function closeModal() {
         document.getElementById('modal-container').innerHTML = '';
-        // Refresh the table
         htmx.trigger('#sensors-table-container', 'htmx:load');
     }
 
-    // Close modal on escape key
+    function switchModalTab(tab) {
+        document.getElementById('panel-settings').style.display = tab === 'settings' ? 'block' : 'none';
+        document.getElementById('panel-measurements').style.display = tab === 'measurements' ? 'block' : 'none';
+        document.getElementById('tab-settings').className = 'modal-tab' + (tab === 'settings' ? ' modal-tab-active' : '');
+        document.getElementById('tab-measurements').className = 'modal-tab' + (tab === 'measurements' ? ' modal-tab-active' : '');
+        if (tab === 'measurements') {
+            htmx.process(document.getElementById('panel-measurements'));
+        }
+    }
+
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeModal();

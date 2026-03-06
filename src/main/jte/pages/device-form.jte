@@ -15,9 +15,12 @@
             <div class="alert ${success ? "alert-success" : "alert-danger"}">${message}</div>
         @endif
 
-        <form hx-${device.getId() != null ? "put" : "post"}="${device.getId() != null ? "/devices/" + device.getId() : "/devices"}"
+        <form hx-post="${device.getId() != null ? "/devices/" + device.getId() : "/devices"}"
               hx-target="#modal-container"
               hx-swap="innerHTML">
+            @if(device.getId() != null)
+            <input type="hidden" name="_method" value="PUT">
+            @endif
 
             <div class="form-group">
                 <label for="deviceName">Gerätename *</label>
@@ -58,8 +61,8 @@
                 <div class="form-group">
                     <label for="isActive">Status</label>
                     <select id="isActive" name="isActive">
-                        <option value="true" ${device.getIsActive() != null && device.getIsActive() ? "selected" : ""}>Aktiv</option>
-                        <option value="false" ${device.getIsActive() != null && !device.getIsActive() ? "selected" : ""}>Inaktiv</option>
+                        <option value="true" selected="${device.getIsActive() != null && device.getIsActive()}">Aktiv</option>
+                        <option value="false" selected="${device.getIsActive() == null || !device.getIsActive()}">Inaktiv</option>
                     </select>
                 </div>
             </div>

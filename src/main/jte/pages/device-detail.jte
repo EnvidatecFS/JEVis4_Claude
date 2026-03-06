@@ -70,12 +70,25 @@
         <div class="card" style="margin-top: var(--spacing-lg);">
             <div class="d-flex justify-between align-center" style="margin-bottom: var(--spacing-md);">
                 <h2 style="margin: 0;">Messpunkt-Zuordnungen</h2>
-                <button class="btn btn-outline"
-                        hx-get="/devices/${device.getId()}/datapoints/new"
-                        hx-target="#modal-container"
-                        hx-swap="innerHTML">
-                    + Zuordnung hinzufügen
-                </button>
+                <div style="display:flex; gap: var(--spacing-sm);">
+                    <button class="btn btn-outline"
+                            hx-get="/devices/${device.getId()}/datapoints/wizard"
+                            hx-target="#modal-container"
+                            hx-swap="innerHTML"
+                            title="Neuen Sensor anlegen und verknüpfen">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:middle; margin-right:4px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Neuer Messpunkt
+                    </button>
+                    <button class="btn btn-outline"
+                            hx-get="/devices/${device.getId()}/datapoints/new"
+                            hx-target="#modal-container"
+                            hx-swap="innerHTML"
+                            title="Bestehenden Sensor zuordnen">
+                        Sensor zuordnen
+                    </button>
+                </div>
             </div>
 
             <div id="datapoints-table-container"

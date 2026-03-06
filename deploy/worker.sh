@@ -50,7 +50,7 @@ register() {
       \"maxConcurrentJobs\": $MAX_CONCURRENT
     }")
 
-  WORKER_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+  WORKER_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['workerId'])")
   API_KEY=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['apiKey'])")
 
   log "Worker registriert: ID=$WORKER_ID"

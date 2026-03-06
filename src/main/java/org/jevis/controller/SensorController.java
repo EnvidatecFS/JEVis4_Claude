@@ -1,7 +1,10 @@
 package org.jevis.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.jevis.model.Measurement;
+import org.jevis.model.MeasurementId;
 import org.jevis.model.Sensor;
+import org.jevis.service.MeasurementService;
 import org.jevis.service.SensorService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @Controller
@@ -21,9 +25,11 @@ import java.util.List;
 public class SensorController {
 
     private final SensorService sensorService;
+    private final MeasurementService measurementService;
 
-    public SensorController(SensorService sensorService) {
+    public SensorController(SensorService sensorService, MeasurementService measurementService) {
         this.sensorService = sensorService;
+        this.measurementService = measurementService;
     }
 
     @GetMapping
@@ -151,5 +157,110 @@ public class SensorController {
         } catch (Exception e) {
             return "<div class=\"alert alert-danger\">" + e.getMessage() + "</div>";
         }
+    }
+
+    // === Measurement Tab Endpoints ===
+
+    @GetMapping("/{id}/measurements")
+    public String measurementsTab(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String sourceType,
+            Model model) {
+        Instant fromInstant = (from != null && !from.isBlank())
+            ? java.time.LocalDateTime.parse(from, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                .atZone(java.time.ZoneId.systemDefault()).toInstant()
+            : null;
+        Instant toInstant = (to != null && !to.isBlank())
+            ? java.time.LocalDateTime.parse(to, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                .atZone(java.time.ZoneId.systemDefault()).toInstant()
+            : null;
+        String srcFilter = (sourceType != null && !sourceType.isBlank()) ? sourceType : null;
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Measurement> measurementsPage = measurementService.getMeasurementsByFilter(
+            id, fromInstant, toInstant, srcFilter, pageable);
+        long filteredCount = measurementService.countByFilter(id, fromInstant, toInstant, srcFilter);
+        long totalCount = measurementService.countMeasurementsBySensor(id);
+
+        model.addAttribute("sensorId", id);
+        model.addAttribute("measurements", measurementsPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", measurementsPage.getTotalPages());
+        model.addAttribute("filteredCount", filteredCount);
+        model.addAttribute("totalCount", totalCount);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("from", from != null ? from : "");
+        model.addAttribute("to", to != null ? to : "");
+        model.addAttribute("sourceType", sourceType != null ? sourceType : "");
+        return "pages/sensor-measurements-tab";
+    }
+
+    @DeleteMapping("/{id}/measurements/single")
+    @ResponseBody
+    public String deleteSingleMeasurement(
+            @PathVariable Long id,
+            @RequestParam long t,
+            @RequestParam short p) {
+        try {
+            MeasurementId measurementId = new MeasurementId(id, Instant.ofEpochMilli(t), p);
+            measurementService.deleteMeasurement(measurementId);
+            return "";
+        } catch (Exception e) {
+            return "<div class=\"alert alert-danger\" style=\"margin:0.5rem 0;\">" + e.getMessage() + "</div>";
+        }
+    }
+
+    @DeleteMapping("/{id}/measurements/filtered")
+    @ResponseBody
+    public String deleteFilteredMeasurements(
+            @PathVariable Long id,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String sourceType) {
+        try {
+            Instant fromInstant = (from != null && !from.isBlank())
+                ? java.time.LocalDateTime.parse(from, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                    .atZone(java.time.ZoneId.systemDefault()).toInstant()
+                : null;
+            Instant toInstant = (to != null && !to.isBlank())
+                ? java.time.LocalDateTime.parse(to, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                    .atZone(java.time.ZoneId.systemDefault()).toInstant()
+                : null;
+            String srcFilter = (sourceType != null && !sourceType.isBlank()) ? sourceType : null;
+            long deleted = measurementService.deleteByFilter(id, fromInstant, toInstant, srcFilter);
+            String params = "?from=" + (from != null ? from : "") + "&to=" + (to != null ? to : "") + "&sourceType=" + (sourceType != null ? sourceType : "");
+            return "<div class=\"alert alert-success\" style=\"margin:0.5rem 0;\">"
+                + deleted + " Messwerte wurden gelöscht."
+                + "</div><div id=\"measurements-list\" hx-get=\"/sensors/" + id + "/measurements" + params + "\""
+                + " hx-trigger=\"load\" hx-swap=\"innerHTML\"></div>";
+        } catch (Exception e) {
+            return "<div class=\"alert alert-danger\" style=\"margin:0.5rem 0;\">" + e.getMessage() + "</div>";
+        }
+    }
+
+    @DeleteMapping("/{id}/measurements/all")
+    @ResponseBody
+    public String deleteAllMeasurements(@PathVariable Long id) {
+        try {
+            long deleted = measurementService.deleteAllBySensor(id);
+            return "<div class=\"alert alert-success\" style=\"margin:0.5rem 0;\">"
+                + deleted + " Messwerte wurden gelöscht."
+                + "</div><div id=\"measurements-list\" hx-get=\"/sensors/" + id + "/measurements\""
+                + " hx-trigger=\"load\" hx-swap=\"innerHTML\"></div>";
+        } catch (Exception e) {
+            return "<div class=\"alert alert-danger\" style=\"margin:0.5rem 0;\">" + e.getMessage() + "</div>";
+        }
+    }
+
+    @GetMapping("/{id}/measurements/confirm-delete-all")
+    public String confirmDeleteAll(@PathVariable Long id, Model model) {
+        long count = measurementService.countMeasurementsBySensor(id);
+        model.addAttribute("sensorId", id);
+        model.addAttribute("count", count);
+        return "pages/sensor-measurements-confirm-delete-all";
     }
 }

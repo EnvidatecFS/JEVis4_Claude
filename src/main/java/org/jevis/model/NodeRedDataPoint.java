@@ -41,6 +41,9 @@ public class NodeRedDataPoint {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Column(name = "fetch_interval_minutes", nullable = false)
+    private Integer fetchIntervalMinutes = 15;
+
     @Column(name = "last_success_at")
     private Instant lastSuccessAt;
 
@@ -79,6 +82,9 @@ public class NodeRedDataPoint {
 
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+    public Integer getFetchIntervalMinutes() { return fetchIntervalMinutes; }
+    public void setFetchIntervalMinutes(Integer fetchIntervalMinutes) { this.fetchIntervalMinutes = fetchIntervalMinutes; }
 
     public Instant getLastSuccessAt() { return lastSuccessAt; }
     public void setLastSuccessAt(Instant lastSuccessAt) { this.lastSuccessAt = lastSuccessAt; }

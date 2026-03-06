@@ -7,6 +7,7 @@ import org.jevis.repository.MeasurementRepository;
 import org.jevis.repository.SensorRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -298,6 +299,63 @@ public class MeasurementService {
      */
     public long countMeasurementsBySensor(Long sensorId) {
         return measurementRepository.countMeasurementsBySensor(sensorId);
+    }
+
+    /**
+     * Delete all measurements for a sensor.
+     */
+    @Transactional
+    public long deleteAllBySensor(Long sensorId) {
+        long count = measurementRepository.countMeasurementsBySensor(sensorId);
+        measurementRepository.deleteAllBySensorId(sensorId);
+        return count;
+    }
+
+    /**
+     * Get measurements with optional filters (paginated) using JPA Specifications.
+     */
+    public Page<Measurement> getMeasurementsByFilter(
+            Long sensorId, Instant from, Instant to, String sourceType, Pageable pageable) {
+        return measurementRepository.findAll(measurementSpec(sensorId, from, to, sourceType), pageable);
+    }
+
+    public long countByFilter(Long sensorId, Instant from, Instant to, String sourceType) {
+        return measurementRepository.count(measurementSpec(sensorId, from, to, sourceType));
+    }
+
+    /**
+     * Delete measurements matching optional filters.
+     */
+    @Transactional
+    public long deleteByFilter(Long sensorId, Instant from, Instant to, String sourceType) {
+        Specification<Measurement> spec = measurementSpec(sensorId, from, to, sourceType);
+        List<Measurement> toDelete = measurementRepository.findAll(spec);
+        measurementRepository.deleteAll(toDelete);
+        return toDelete.size();
+    }
+
+    private Specification<Measurement> measurementSpec(
+            Long sensorId, Instant from, Instant to, String sourceType) {
+        return (root, query, cb) -> {
+            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+            predicates.add(cb.equal(root.get("id").get("sensorId"), sensorId));
+            if (from != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("id").get("measuredAt"), from));
+            }
+            if (to != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("id").get("measuredAt"), to));
+            }
+            if (sourceType != null) {
+                predicates.add(cb.equal(root.get("sourceType"), sourceType));
+            }
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                query.orderBy(
+                    cb.desc(root.get("id").get("measuredAt")),
+                    cb.desc(root.get("id").get("priority"))
+                );
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
     }
 
     // === Validation Helper ===

@@ -88,6 +88,12 @@
       <artifactId>spring-boot-starter-quartz</artifactId>
     </dependency>
 
+    <!-- Flyway Database Migrations -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+
     <!-- Spring Boot Starter Test -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -101,6 +107,26 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <!-- Precompile JTE templates for production JAR -->
+      <plugin>
+        <groupId>gg.jte</groupId>
+        <artifactId>jte-maven-plugin</artifactId>
+        <version>${jte.version}</version>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>precompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sourceDirectory>${project.basedir}/src/main/jte</sourceDirectory>
+          <targetDirectory>${project.build.outputDirectory}</targetDirectory>
+          <contentType>Html</contentType>
+        </configuration>
       </plugin>
     </plugins>
   </build>

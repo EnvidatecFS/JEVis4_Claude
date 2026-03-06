@@ -22,13 +22,14 @@
                 <th>Letzter Erfolg</th>
                 <th>Letzter Zeitstempel</th>
                 <th>Importiert</th>
+                <th>Intervall</th>
                 <th class="actions-col">Aktionen</th>
             </tr>
         </thead>
         <tbody>
             @if(dataPoints.isEmpty())
                 <tr>
-                    <td colspan="8" class="empty-state">
+                    <td colspan="9" class="empty-state">
                         <p>Keine Messpunkt-Zuordnungen vorhanden</p>
                         <p class="text-muted">Fügen Sie eine Zuordnung hinzu, um Daten zu importieren</p>
                     </td>
@@ -54,6 +55,18 @@
                         <td class="date-cell">${dp.getLastSuccessAt() != null ? formatter.format(dp.getLastSuccessAt()) : "-"}</td>
                         <td class="date-cell">${dp.getLastDataTimestamp() != null ? formatter.format(dp.getLastDataTimestamp()) : "-"}</td>
                         <td>${dp.getLastImportCount() != null ? dp.getLastImportCount().toString() : "-"}</td>
+                        <td class="date-cell">
+                            !{var mins = dp.getFetchIntervalMinutes() != null ? dp.getFetchIntervalMinutes() : 15;}
+                            @if(mins < 60)
+                                ${mins} min
+                            @elseif(mins == 60)
+                                1 h
+                            @elseif(mins == 1440)
+                                24 h
+                            @else
+                                ${mins / 60} h
+                            @endif
+                        </td>
                         <td class="actions-cell">
                             <button class="btn-icon btn-icon-fetch" title="Jetzt auslesen"
                                     hx-post="/devices/${deviceId}/datapoints/${dp.getId()}/fetch"
@@ -61,6 +74,14 @@
                                     hx-swap="innerHTML">
                                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="Bearbeiten"
+                                    hx-get="/devices/${deviceId}/datapoints/${dp.getId()}/edit"
+                                    hx-target="#modal-container"
+                                    hx-swap="innerHTML">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
                             </button>
                             <button class="btn-icon btn-icon-danger" title="Zuordnung löschen"
@@ -94,7 +115,7 @@
     .status-active { background-color: #d1fae5; color: #065f46; }
     .status-inactive { background-color: #fee2e2; color: #991b1b; }
     .date-cell { white-space: nowrap; color: var(--text-secondary); font-size: 0.8rem; }
-    .actions-col { width: 100px; text-align: center; }
+    .actions-col { width: 130px; text-align: center; }
     .actions-cell { text-align: center; white-space: nowrap; }
     .btn-icon { background: none; border: none; cursor: pointer; padding: var(--spacing-sm); color: var(--text-secondary); border-radius: var(--radius-md); transition: all 0.2s; }
     .btn-icon:hover { background-color: var(--background); color: var(--primary-color); }

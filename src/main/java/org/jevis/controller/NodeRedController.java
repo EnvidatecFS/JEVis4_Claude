@@ -168,6 +168,84 @@ public class NodeRedController {
         return "pages/device-datapoint-form";
     }
 
+    // === Wizard: Messpunkt anlegen & verknüpfen ===
+
+    @GetMapping("/{id}/datapoints/wizard")
+    public String datapointWizard(@PathVariable Long id, Model model) {
+        NodeRedDevice device = deviceRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Gerät nicht gefunden: " + id));
+        model.addAttribute("device", device);
+        model.addAttribute("step", 1);
+        return "pages/datapoint-wizard";
+    }
+
+    @PostMapping("/{id}/datapoints/wizard/step2")
+    public String datapointWizardStep2(@PathVariable Long id,
+                                        @RequestParam String remoteId,
+                                        @RequestParam(required = false) String remoteName,
+                                        Model model) {
+        NodeRedDevice device = deviceRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Gerät nicht gefunden: " + id));
+        model.addAttribute("device", device);
+        model.addAttribute("step", 2);
+        model.addAttribute("remoteId", remoteId);
+        model.addAttribute("remoteName", remoteName != null ? remoteName : "");
+        model.addAttribute("sensors", sensorService.getActiveSensors());
+        model.addAttribute("measurementTypes", sensorService.getAllMeasurementTypes());
+        return "pages/datapoint-wizard";
+    }
+
+    @PostMapping("/{id}/datapoints/wizard/create")
+    @ResponseBody
+    public String datapointWizardCreate(@PathVariable Long id,
+                                         @RequestParam String remoteId,
+                                         @RequestParam(required = false) String remoteName,
+                                         @RequestParam String sensorMode,
+                                         @RequestParam(required = false) Long sensorId,
+                                         @RequestParam(required = false) String sensorCode,
+                                         @RequestParam(required = false) String sensorName,
+                                         @RequestParam(required = false) String measurementType,
+                                         @RequestParam(required = false) String unit,
+                                         @RequestParam(required = false) String location) {
+        try {
+            NodeRedDevice device = deviceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Gerät nicht gefunden: " + id));
+
+            Sensor sensor;
+            if ("new".equals(sensorMode)) {
+                Sensor newSensor = new Sensor();
+                newSensor.setSensorCode(sensorCode);
+                newSensor.setSensorName(sensorName);
+                newSensor.setMeasurementType(measurementType);
+                newSensor.setUnit(unit);
+                newSensor.setLocation(location);
+                newSensor.setIsActive(true);
+                sensor = sensorService.createSensor(newSensor);
+            } else {
+                sensor = sensorService.getSensorById(sensorId);
+            }
+
+            NodeRedDataPoint dp = new NodeRedDataPoint();
+            dp.setDevice(device);
+            dp.setSensor(sensor);
+            dp.setRemoteId(remoteId);
+            dp.setRemoteName(remoteName);
+            dp.setIsActive(true);
+            dataPointRepository.save(dp);
+
+            String sensorLabel = sensor.getSensorName() != null ? sensor.getSensorName() : sensor.getSensorCode();
+            return "<div hx-get=\"/devices/" + id + "/datapoints/table\" "
+                 + "hx-target=\"#datapoints-table-container\" "
+                 + "hx-trigger=\"load\" hx-swap=\"innerHTML\"></div>"
+                 + "<script>document.getElementById('modal-container').innerHTML='';</script>"
+                 + "<div class=\"alert alert-success\" "
+                 + "hx-swap-oob=\"innerHTML:#fetch-result\">"
+                 + "Messpunkt &ldquo;" + sensorLabel + "&rdquo; erfolgreich zugeordnet.</div>";
+        } catch (Exception e) {
+            return "<div class=\"alert alert-danger\" style=\"margin:1rem;\">Fehler: " + e.getMessage() + "</div>";
+        }
+    }
+
     @PostMapping("/{id}/datapoints")
     public String createDataPoint(@PathVariable Long id,
                                    @RequestParam String remoteId,
@@ -200,6 +278,70 @@ public class NodeRedController {
         model.addAttribute("sensors", sensors);
         model.addAttribute("dataPoint", new NodeRedDataPoint());
         return "pages/device-datapoint-form";
+    }
+
+    @GetMapping("/{deviceId}/datapoints/{dpId}/edit")
+    public String editDataPointForm(@PathVariable Long deviceId, @PathVariable Long dpId, Model model) {
+        NodeRedDataPoint dp = dataPointRepository.findById(dpId)
+            .orElseThrow(() -> new IllegalArgumentException("Messpunkt nicht gefunden: " + dpId));
+        model.addAttribute("dataPoint", dp);
+        model.addAttribute("sensors", sensorService.getActiveSensors());
+        model.addAttribute("measurementTypes", sensorService.getAllMeasurementTypes());
+        return "pages/datapoint-edit-form";
+    }
+
+    @PutMapping("/{deviceId}/datapoints/{dpId}")
+    public String updateDataPoint(@PathVariable Long deviceId,
+                                  @PathVariable Long dpId,
+                                  @RequestParam String remoteId,
+                                  @RequestParam(required = false) String remoteName,
+                                  @RequestParam(defaultValue = "true") Boolean isActive,
+                                  @RequestParam(defaultValue = "15") Integer fetchIntervalMinutes,
+                                  @RequestParam String sensorMode,
+                                  @RequestParam(required = false) Long sensorId,
+                                  @RequestParam(required = false) String sensorCode,
+                                  @RequestParam(required = false) String sensorName,
+                                  @RequestParam(required = false) String measurementType,
+                                  @RequestParam(required = false) String unit,
+                                  @RequestParam(required = false) String location,
+                                  Model model) {
+        try {
+            NodeRedDataPoint dp = dataPointRepository.findById(dpId)
+                .orElseThrow(() -> new IllegalArgumentException("Messpunkt nicht gefunden: " + dpId));
+
+            dp.setRemoteId(remoteId);
+            dp.setRemoteName(remoteName);
+            dp.setIsActive(isActive);
+            dp.setFetchIntervalMinutes(fetchIntervalMinutes);
+
+            if ("new".equals(sensorMode)) {
+                org.jevis.model.Sensor newSensor = new org.jevis.model.Sensor();
+                newSensor.setSensorCode(sensorCode);
+                newSensor.setSensorName(sensorName);
+                newSensor.setMeasurementType(measurementType);
+                newSensor.setUnit(unit);
+                newSensor.setLocation(location);
+                newSensor.setIsActive(true);
+                dp.setSensor(sensorService.createSensor(newSensor));
+            } else if (sensorId != null) {
+                dp.setSensor(sensorService.getSensorById(sensorId));
+            }
+
+            dataPointRepository.save(dp);
+            model.addAttribute("dataPoint", dp);
+            model.addAttribute("sensors", sensorService.getActiveSensors());
+            model.addAttribute("measurementTypes", sensorService.getAllMeasurementTypes());
+            model.addAttribute("success", true);
+            model.addAttribute("message", "Zuordnung erfolgreich gespeichert");
+        } catch (Exception e) {
+            NodeRedDataPoint dp = dataPointRepository.findById(dpId).orElse(new NodeRedDataPoint());
+            model.addAttribute("dataPoint", dp);
+            model.addAttribute("sensors", sensorService.getActiveSensors());
+            model.addAttribute("measurementTypes", sensorService.getAllMeasurementTypes());
+            model.addAttribute("success", false);
+            model.addAttribute("message", "Fehler: " + e.getMessage());
+        }
+        return "pages/datapoint-edit-form";
     }
 
     @DeleteMapping("/{deviceId}/datapoints/{dpId}")

@@ -5,6 +5,7 @@ import org.jevis.model.MeasurementId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,7 +20,7 @@ import java.util.List;
  * and priority-based measurement retrieval for PV system data analysis.
  */
 @Repository
-public interface MeasurementRepository extends JpaRepository<Measurement, MeasurementId> {
+public interface MeasurementRepository extends JpaRepository<Measurement, MeasurementId>, JpaSpecificationExecutor<Measurement> {
 
     // === Time-series Query Methods (using nested properties for composite key) ===
 
@@ -283,4 +284,12 @@ public interface MeasurementRepository extends JpaRepository<Measurement, Measur
      * @return Count of measurements
      */
     long countBySourceType(String sourceType);
+
+    /**
+     * Delete all measurements for a specific sensor.
+     */
+    @Modifying
+    @Query("DELETE FROM Measurement m WHERE m.id.sensorId = :sensorId")
+    int deleteAllBySensorId(@Param("sensorId") Long sensorId);
+
 }
