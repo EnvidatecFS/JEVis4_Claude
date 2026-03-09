@@ -48,23 +48,23 @@ public class NodeRedFetchService {
     }
 
     @Transactional
-    public int fetchDevice(Long deviceId) {
+    public FetchResult fetchDevice(Long deviceId) {
         NodeRedDevice device = deviceRepository.findById(deviceId)
             .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
 
         List<NodeRedDataPoint> activeDataPoints = dataPointRepository.findByDeviceIdAndIsActiveTrue(deviceId);
         if (activeDataPoints.isEmpty()) {
             log.warn("No active data points for device {}", device.getDeviceName());
-            return 0;
+            return FetchResult.empty();
         }
 
-        int totalImported = 0;
+        FetchResult overallResult = FetchResult.empty();
         boolean deviceReached = false;
 
         for (NodeRedDataPoint dp : activeDataPoints) {
             try {
-                int count = fetchSingleDataPoint(device, dp);
-                totalImported += count;
+                FetchResult dpResult = fetchSingleDataPoint(device, dp);
+                overallResult = overallResult.merge(dpResult);
                 deviceReached = true;
             } catch (Exception e) {
                 log.error("Error fetching data point {} (remoteId={}) from device {}: {}",
@@ -75,34 +75,34 @@ public class NodeRedFetchService {
         if (deviceReached) {
             device.setLastReachedAt(Instant.now());
         }
-        if (totalImported > 0) {
+        if (overallResult.count() > 0) {
             device.setLastDataImportAt(Instant.now());
         }
         deviceRepository.save(device);
 
         log.info("Device '{}': imported {} measurements from {} data points",
-            device.getDeviceName(), totalImported, activeDataPoints.size());
-        return totalImported;
+            device.getDeviceName(), overallResult.count(), activeDataPoints.size());
+        return overallResult;
     }
 
     @Transactional
-    public int fetchDataPoint(Long dataPointId) {
+    public FetchResult fetchDataPoint(Long dataPointId) {
         NodeRedDataPoint dp = dataPointRepository.findById(dataPointId)
             .orElseThrow(() -> new IllegalArgumentException("DataPoint not found: " + dataPointId));
 
         NodeRedDevice device = dp.getDevice();
-        int count = fetchSingleDataPoint(device, dp);
+        FetchResult result = fetchSingleDataPoint(device, dp);
 
-        if (count > 0) {
+        if (result.count() > 0) {
             device.setLastReachedAt(Instant.now());
             device.setLastDataImportAt(Instant.now());
             deviceRepository.save(device);
         }
 
-        return count;
+        return result;
     }
 
-    private int fetchSingleDataPoint(NodeRedDevice device, NodeRedDataPoint dp) {
+    private FetchResult fetchSingleDataPoint(NodeRedDevice device, NodeRedDataPoint dp) {
         Instant from = dp.getLastDataTimestamp() != null ? dp.getLastDataTimestamp() : DEFAULT_FROM;
         Instant until = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59)
             .toInstant(ZoneOffset.UTC);
@@ -117,6 +117,10 @@ public class NodeRedFetchService {
         if (!measurements.isEmpty()) {
             measurementRepository.saveAll(measurements);
 
+            Instant minTimestamp = measurements.stream()
+                .map(m -> m.getId().getMeasuredAt())
+                .min(Instant::compareTo)
+                .orElse(null);
             Instant maxTimestamp = measurements.stream()
                 .map(m -> m.getId().getMeasuredAt())
                 .max(Instant::compareTo)
@@ -126,11 +130,14 @@ public class NodeRedFetchService {
             dp.setLastDataTimestamp(maxTimestamp);
             dp.setLastImportCount(measurements.size());
             dataPointRepository.save(dp);
+
+            log.info("DataPoint '{}' (remoteId={}): imported {} measurements ({} – {})",
+                dp.getRemoteName(), dp.getRemoteId(), measurements.size(), minTimestamp, maxTimestamp);
+            return new FetchResult(measurements.size(), minTimestamp, maxTimestamp);
         }
 
-        log.info("DataPoint '{}' (remoteId={}): imported {} measurements",
-            dp.getRemoteName(), dp.getRemoteId(), measurements.size());
-        return measurements.size();
+        log.info("DataPoint '{}' (remoteId={}): keine neuen Messwerte", dp.getRemoteName(), dp.getRemoteId());
+        return FetchResult.empty();
     }
 
     private String callApi(NodeRedDevice device, String remoteId, String from, String until, Integer limit) {

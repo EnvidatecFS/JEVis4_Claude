@@ -142,7 +142,7 @@ public class NodeRedController {
             NodeRedDevice device = deviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Gerät nicht gefunden: " + id));
             jobProcessor.createFetchJob(id, device.getDeviceName());
-            int count = fetchService.fetchDevice(id);
+            int count = fetchService.fetchDevice(id).count();
             return "<div class=\"alert alert-success\">Erfolgreich " + count + " Messwerte importiert</div>";
         } catch (Exception e) {
             return "<div class=\"alert alert-danger\">Fehler: " + e.getMessage() + "</div>";
@@ -359,7 +359,7 @@ public class NodeRedController {
     @ResponseBody
     public String fetchDataPoint(@PathVariable Long deviceId, @PathVariable Long dpId) {
         try {
-            int count = fetchService.fetchDataPoint(dpId);
+            int count = fetchService.fetchDataPoint(dpId).count();
             return "<div class=\"alert alert-success\">Erfolgreich " + count + " Messwerte importiert</div>";
         } catch (Exception e) {
             return "<div class=\"alert alert-danger\">Fehler: " + e.getMessage() + "</div>";

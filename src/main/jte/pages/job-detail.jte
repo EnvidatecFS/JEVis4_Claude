@@ -1,8 +1,12 @@
 @import org.springframework.security.web.csrf.CsrfToken
 @import org.jevis.model.Job
-@import org.jevis.model.JobExecution
 @import org.jevis.model.JobEvent
+@import org.jevis.model.JobEventType
+@import org.jevis.model.JobExecution
+@import com.fasterxml.jackson.databind.JsonNode
+@import com.fasterxml.jackson.databind.ObjectMapper
 @import java.util.List
+@import java.time.Instant
 @import java.time.format.DateTimeFormatter
 
 @param String username
@@ -12,6 +16,7 @@
 @param CsrfToken _csrf = null
 
 !{var formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").withZone(java.time.ZoneId.systemDefault());}
+!{var statsMapper = new ObjectMapper();}
 
 @template.layout.app(
     title = "Job #" + job.getId(),
@@ -116,6 +121,25 @@
                                     <span class="timeline-date">${event.getCreatedAt() != null ? formatter.format(event.getCreatedAt()) : ""}</span>
                                 </div>
                                 <div class="timeline-message">${event.getEventMessage() != null ? event.getEventMessage() : ""}</div>
+                                @if(event.getEventType() == JobEventType.JOB_COMPLETED && event.getEventData() != null)
+                                    !{
+                                        JsonNode statsNode = null;
+                                        try { statsNode = statsMapper.readTree(event.getEventData()); } catch(Exception ignored) {}
+                                    }
+                                    @if(statsNode != null && statsNode.has("importedCount"))
+                                        <div class="fetch-stats">
+                                            <span class="fetch-stat">${statsNode.get("importedCount").asInt()} Samples</span>
+                                            @if(statsNode.has("firstTimestamp") && !statsNode.get("firstTimestamp").isNull())
+                                                <span class="fetch-stat-sep">|</span>
+                                                <span class="fetch-stat">Erster: ${formatter.format(Instant.parse(statsNode.get("firstTimestamp").asText()))}</span>
+                                            @endif
+                                            @if(statsNode.has("lastTimestamp") && !statsNode.get("lastTimestamp").isNull())
+                                                <span class="fetch-stat-sep">|</span>
+                                                <span class="fetch-stat">Letzter: ${formatter.format(Instant.parse(statsNode.get("lastTimestamp").asText()))}</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                @endif
                             </div>
                         </div>
                     @endfor
@@ -139,6 +163,9 @@
             .timeline-header { display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: 4px; }
             .timeline-date { font-size: 0.75rem; color: var(--text-secondary); }
             .timeline-message { font-size: var(--font-size-sm); color: var(--text-primary); }
+            .fetch-stats { display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+            .fetch-stat { font-size: 0.72rem; background: var(--background); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 2px 8px; color: var(--text-secondary); white-space: nowrap; }
+            .fetch-stat-sep { color: var(--border-color); font-size: 0.72rem; }
             .btn-sm { padding: var(--spacing-sm) var(--spacing-md); font-size: var(--font-size-sm); }
         </style>
     `

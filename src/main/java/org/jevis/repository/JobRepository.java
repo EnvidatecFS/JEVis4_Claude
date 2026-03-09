@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 public interface JobRepository extends JpaRepository<Job, Long> {
 
@@ -48,4 +49,15 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     @Query("SELECT j FROM Job j WHERE j.status = 'RUNNING'")
     List<Job> findRunningJobs();
+
+    Optional<Job> findByJobNameAndIsRecurringTrue(String jobName);
+
+    List<Job> findByStatusAndJobType(JobStatus status, JobType jobType);
+
+    @Query("SELECT j FROM Job j WHERE j.isRecurring = true AND j.jobParameters LIKE %:fragment%")
+    Optional<Job> findRecurringByParameterFragment(@Param("fragment") String fragment);
+
+    @Query("SELECT j FROM Job j WHERE j.isRecurring = false AND j.jobParameters LIKE %:fragment% " +
+           "AND j.status IN ('QUEUED', 'ASSIGNED', 'RUNNING', 'RETRY_SCHEDULED')")
+    List<Job> findActiveQueueInstancesByParameterFragment(@Param("fragment") String fragment);
 }

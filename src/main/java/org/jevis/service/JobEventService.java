@@ -2,6 +2,7 @@ package org.jevis.service;
 
 import org.jevis.model.*;
 import org.jevis.repository.JobEventRepository;
+import org.jevis.service.FetchResult;
 import org.jevis.repository.JobRepository;
 import org.jevis.repository.WorkerPoolRepository;
 import org.slf4j.Logger;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 
@@ -54,15 +57,46 @@ public class JobEventService {
         return eventRepository.save(event);
     }
 
+    private static final DateTimeFormatter DISPLAY_FMT =
+        DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneOffset.UTC);
+
     @Transactional
     public void processCompletion(Job job) {
-        createEvent(job, JobEventType.JOB_COMPLETED,
-            "Job '" + job.getJobName() + "' erfolgreich abgeschlossen", null, null);
+        processCompletion(job, null);
+    }
+
+    @Transactional
+    public void processCompletion(Job job, FetchResult result) {
+        String message;
+        String eventData = null;
+
+        if (result != null && job.getJobType() == JobType.DATA_FETCH) {
+            if (result.count() > 0) {
+                String first = result.firstTimestamp() != null ? DISPLAY_FMT.format(result.firstTimestamp()) : "?";
+                String last  = result.lastTimestamp()  != null ? DISPLAY_FMT.format(result.lastTimestamp())  : "?";
+                message = result.count() + " Messwerte importiert · " + first + " – " + last;
+                eventData = buildStatsJson(result);
+            } else {
+                message = "Keine neuen Messwerte";
+            }
+        } else {
+            message = "Job '" + job.getJobName() + "' erfolgreich abgeschlossen";
+        }
+
+        createEvent(job, JobEventType.JOB_COMPLETED, message, eventData, null);
 
         // Event-Chain: trigger follow-up job on success
         if (job.getOnSuccessJobType() != null) {
             processEventChain(job);
         }
+    }
+
+    private String buildStatsJson(FetchResult result) {
+        String first = result.firstTimestamp() != null ? "\"" + result.firstTimestamp() + "\"" : "null";
+        String last  = result.lastTimestamp()  != null ? "\"" + result.lastTimestamp()  + "\"" : "null";
+        return "{\"importedCount\":" + result.count()
+             + ",\"firstTimestamp\":" + first
+             + ",\"lastTimestamp\":"  + last + "}";
     }
 
     @Transactional
@@ -90,9 +124,20 @@ public class JobEventService {
         }
     }
 
+    private int computeBackoff(Job job) {
+        if (JobType.DATA_FETCH == job.getJobType()) {
+            return switch (job.getRetryCount()) { // retryCount ist bereits inkrementiert
+                case 1 -> 300;    // 5 Minuten
+                case 2 -> 1800;   // 30 Minuten
+                default -> 7200;  // 2 Stunden
+            };
+        }
+        return job.getRetryBackoffSeconds() * job.getRetryCount(); // bisherige Formel
+    }
+
     private void scheduleRetry(Job job) {
         job.setRetryCount(job.getRetryCount() + 1);
-        int backoffSeconds = job.getRetryBackoffSeconds() * job.getRetryCount();
+        int backoffSeconds = computeBackoff(job);
         job.setScheduledFor(Instant.now().plusSeconds(backoffSeconds));
         job.setPriority(JobPriority.RETRY);
         stateMachine.transition(job, JobStatus.RETRY_SCHEDULED);

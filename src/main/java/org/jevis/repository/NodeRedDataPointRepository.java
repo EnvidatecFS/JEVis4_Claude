@@ -14,4 +14,6 @@ public interface NodeRedDataPointRepository extends JpaRepository<NodeRedDataPoi
     List<NodeRedDataPoint> findByDeviceIdAndIsActiveTrue(Long deviceId);
 
     List<NodeRedDataPoint> findBySensorId(Long sensorId);
+
+    List<NodeRedDataPoint> findByIsActiveTrue();
 }

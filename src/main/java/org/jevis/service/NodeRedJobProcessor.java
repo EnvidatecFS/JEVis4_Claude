@@ -23,33 +23,30 @@ public class NodeRedJobProcessor {
         this.objectMapper = new ObjectMapper();
     }
 
-    public void processDataFetchJob(Job job) {
+    public FetchResult processDataFetchJob(Job job) {
         log.info("Processing Node-Red DATA_FETCH job: {}", job.getJobName());
 
+        JsonNode params;
         try {
-            JsonNode params = objectMapper.readTree(job.getJobParameters());
-
-            String scope = params.has("scope") ? params.get("scope").asText("device") : "device";
-            int imported;
-
-            if ("datapoint".equals(scope) && params.has("dataPointId")) {
-                Long dataPointId = params.get("dataPointId").asLong();
-                imported = fetchService.fetchDataPoint(dataPointId);
-            } else if (params.has("deviceId")) {
-                Long deviceId = params.get("deviceId").asLong();
-                imported = fetchService.fetchDevice(deviceId);
-            } else {
-                throw new IllegalArgumentException("Job parameters must contain 'deviceId' or 'dataPointId'");
-            }
-
-            job.setStatus(JobStatus.COMPLETED);
-            jobRepository.save(job);
-            log.info("Node-Red DATA_FETCH job completed: {} measurements imported", imported);
-
+            params = objectMapper.readTree(job.getJobParameters());
         } catch (Exception e) {
-            log.error("Node-Red DATA_FETCH job failed: {}", e.getMessage(), e);
-            job.setStatus(JobStatus.FAILED);
-            jobRepository.save(job);
+            throw new IllegalArgumentException("Failed to parse job parameters: " + e.getMessage(), e);
+        }
+
+        String scope = params.has("scope") ? params.get("scope").asText("device") : "device";
+
+        if ("datapoint".equals(scope) && params.has("dataPointId")) {
+            Long dataPointId = params.get("dataPointId").asLong();
+            FetchResult result = fetchService.fetchDataPoint(dataPointId);
+            log.info("Node-Red DATA_FETCH job completed: {} measurements imported", result.count());
+            return result;
+        } else if (params.has("deviceId")) {
+            Long deviceId = params.get("deviceId").asLong();
+            FetchResult result = fetchService.fetchDevice(deviceId);
+            log.info("Node-Red DATA_FETCH job completed: {} measurements imported", result.count());
+            return result;
+        } else {
+            throw new IllegalArgumentException("Job parameters must contain 'deviceId' or 'dataPointId'");
         }
     }
 
