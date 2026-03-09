@@ -4,7 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.jevis.model.Measurement;
 import org.jevis.model.MeasurementId;
 import org.jevis.model.Sensor;
+import org.jevis.service.FileUploadService;
 import org.jevis.service.MeasurementService;
+import org.jevis.service.MeterTypeService;
 import org.jevis.service.SensorService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +18,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,10 +29,15 @@ public class SensorController {
 
     private final SensorService sensorService;
     private final MeasurementService measurementService;
+    private final MeterTypeService meterTypeService;
+    private final FileUploadService fileUploadService;
 
-    public SensorController(SensorService sensorService, MeasurementService measurementService) {
+    public SensorController(SensorService sensorService, MeasurementService measurementService,
+                            MeterTypeService meterTypeService, FileUploadService fileUploadService) {
         this.sensorService = sensorService;
         this.measurementService = measurementService;
+        this.meterTypeService = meterTypeService;
+        this.fileUploadService = fileUploadService;
     }
 
     @GetMapping
@@ -88,6 +96,9 @@ public class SensorController {
         model.addAttribute("sensor", sensor);
         List<String> measurementTypes = sensorService.getAllMeasurementTypes();
         model.addAttribute("measurementTypes", measurementTypes);
+        model.addAttribute("allSensors", sensorService.getAllSensorsExcept(id));
+        model.addAttribute("allMeterTypes", meterTypeService.getAllMeterTypes());
+        model.addAttribute("defaultMeasurementDate", sensorService.findLatestMeasurementDate(id));
         return "pages/sensor-edit-form";
     }
 
@@ -95,9 +106,28 @@ public class SensorController {
     public String updateSensor(
             @PathVariable Long id,
             @ModelAttribute Sensor sensorData,
+            @RequestParam(required = false) Long parentSensorId,
+            @RequestParam(required = false) Long meterTypeId,
+            @RequestParam(required = false) MultipartFile verificationDocument,
+            @RequestParam(required = false) MultipartFile sensorImage,
             Model model
     ) {
         try {
+            if (parentSensorId != null) {
+                Sensor parentSensor = sensorService.getSensorById(parentSensorId);
+                sensorData.setParentSensor(parentSensor);
+            }
+            if (meterTypeId != null) {
+                sensorData.setMeterType(meterTypeService.getMeterTypeById(meterTypeId));
+            }
+            if (verificationDocument != null && !verificationDocument.isEmpty()) {
+                sensorData.setVerificationDocumentPath(
+                    fileUploadService.store(verificationDocument, "sensors/verification"));
+            }
+            if (sensorImage != null && !sensorImage.isEmpty()) {
+                sensorData.setSensorImagePath(
+                    fileUploadService.store(sensorImage, "sensors/images"));
+            }
             Sensor updated = sensorService.updateSensor(id, sensorData);
             model.addAttribute("sensor", updated);
             model.addAttribute("success", true);
@@ -110,6 +140,9 @@ public class SensorController {
         }
         List<String> measurementTypes = sensorService.getAllMeasurementTypes();
         model.addAttribute("measurementTypes", measurementTypes);
+        model.addAttribute("allSensors", sensorService.getAllSensorsExcept(id));
+        model.addAttribute("allMeterTypes", meterTypeService.getAllMeterTypes());
+        model.addAttribute("defaultMeasurementDate", sensorService.findLatestMeasurementDate(id));
         return "pages/sensor-edit-form";
     }
 

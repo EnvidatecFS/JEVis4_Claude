@@ -292,4 +292,7 @@ public interface MeasurementRepository extends JpaRepository<Measurement, Measur
     @Query("DELETE FROM Measurement m WHERE m.id.sensorId = :sensorId")
     int deleteAllBySensorId(@Param("sensorId") Long sensorId);
 
+    @Query("SELECT MAX(m.id.measuredAt) FROM Measurement m WHERE m.id.sensorId = :sensorId")
+    java.time.Instant findLatestMeasuredAt(@Param("sensorId") Long sensorId);
+
 }

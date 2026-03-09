@@ -105,4 +105,10 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
         @Param("isActive") Boolean isActive,
         Pageable pageable
     );
+
+    @Query("SELECT s FROM Sensor s WHERE s.id != :excludeId ORDER BY s.sensorCode ASC")
+    List<Sensor> findAllExcept(@Param("excludeId") Long excludeId);
+
+    @Query("SELECT s FROM Sensor s ORDER BY s.sensorCode ASC")
+    List<Sensor> findAllOrderBySensorCode();
 }

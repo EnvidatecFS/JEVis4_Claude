@@ -1,6 +1,9 @@
 package org.jevis.service;
 
+import org.jevis.model.MeterType;
 import org.jevis.model.Sensor;
+import org.jevis.repository.MeasurementRepository;
+import org.jevis.repository.MeterTypeRepository;
 import org.jevis.repository.SensorRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,9 +27,15 @@ import java.util.stream.Collectors;
 public class SensorService {
 
     private final SensorRepository sensorRepository;
+    private final MeasurementRepository measurementRepository;
+    private final MeterTypeRepository meterTypeRepository;
 
-    public SensorService(SensorRepository sensorRepository) {
+    public SensorService(SensorRepository sensorRepository,
+                         MeasurementRepository measurementRepository,
+                         MeterTypeRepository meterTypeRepository) {
         this.sensorRepository = sensorRepository;
+        this.measurementRepository = measurementRepository;
+        this.meterTypeRepository = meterTypeRepository;
     }
 
     // === CRUD Operations ===
@@ -72,6 +83,33 @@ public class SensorService {
         existingSensor.setCalibrationDate(updatedSensor.getCalibrationDate());
         existingSensor.setIsActive(updatedSensor.getIsActive());
         existingSensor.setMetadata(updatedSensor.getMetadata());
+
+        // Extended fields
+        existingSensor.setSensorTag(updatedSensor.getSensorTag());
+        existingSensor.setMedium(updatedSensor.getMedium());
+        existingSensor.setDeviceNumber(updatedSensor.getDeviceNumber());
+        existingSensor.setGpsLat(updatedSensor.getGpsLat());
+        existingSensor.setGpsLon(updatedSensor.getGpsLon());
+        existingSensor.setInstallationLocationLat(updatedSensor.getInstallationLocationLat());
+        existingSensor.setInstallationLocationLon(updatedSensor.getInstallationLocationLon());
+        existingSensor.setCostCenter(updatedSensor.getCostCenter());
+        existingSensor.setSerialNumber(updatedSensor.getSerialNumber());
+        existingSensor.setIpAddress(updatedSensor.getIpAddress());
+        existingSensor.setInstallationDate(updatedSensor.getInstallationDate());
+        existingSensor.setLastInspectionDate(updatedSensor.getLastInspectionDate());
+        existingSensor.setCurrentTransformer(updatedSensor.getCurrentTransformer());
+        existingSensor.setCurrentTransformerRatio(updatedSensor.getCurrentTransformerRatio());
+        existingSensor.setVoltageTransformerRatio(updatedSensor.getVoltageTransformerRatio());
+        existingSensor.setVoltageTransformer(updatedSensor.getVoltageTransformer());
+        existingSensor.setNotes(updatedSensor.getNotes());
+
+        // File paths (only update if provided)
+        if (updatedSensor.getVerificationDocumentPath() != null) {
+            existingSensor.setVerificationDocumentPath(updatedSensor.getVerificationDocumentPath());
+        }
+        if (updatedSensor.getSensorImagePath() != null) {
+            existingSensor.setSensorImagePath(updatedSensor.getSensorImagePath());
+        }
 
         return sensorRepository.save(existingSensor);
     }
@@ -310,5 +348,24 @@ public class SensorService {
      */
     public List<Sensor> getInactiveSensors() {
         return sensorRepository.findInactiveSensors();
+    }
+
+    /**
+     * Get all sensors except the one with the given ID (for parent sensor selection).
+     */
+    public List<Sensor> getAllSensorsExcept(Long excludeId) {
+        return sensorRepository.findAllExcept(excludeId);
+    }
+
+    /**
+     * Find the date of the latest measurement for a sensor formatted as "yyyy-MM-dd".
+     * Returns null if there are no measurements.
+     */
+    public String findLatestMeasurementDate(Long sensorId) {
+        Instant latest = measurementRepository.findLatestMeasuredAt(sensorId);
+        if (latest == null) return null;
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            .withZone(ZoneId.systemDefault())
+            .format(latest);
     }
 }

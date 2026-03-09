@@ -140,6 +140,15 @@
                 </span>
                 <span class="nav-item-text">Einstellungen</span>
             </a>
+            <a href="/meter-types" class="${"meter-types".equals(currentPage) ? "nav-item active" : "nav-item"}" title="Zählerverwaltung">
+                <span class="nav-item-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                    </svg>
+                </span>
+                <span class="nav-item-text">Zählerverwaltung</span>
+            </a>
         </div>
     </nav>
 

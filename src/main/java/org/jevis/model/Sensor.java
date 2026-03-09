@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -83,6 +84,72 @@ public class Sensor {
     // Metadata (stored as TEXT for H2 compatibility, use JSONB in PostgreSQL)
     @Column(columnDefinition = "TEXT")
     private String metadata;
+
+    // Extended fields
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_sensor_id")
+    private Sensor parentSensor;
+
+    @Column(name = "sensor_tag", length = 100)
+    private String sensorTag;
+
+    @Column(name = "medium", length = 50)
+    private String medium;
+
+    @Column(name = "device_number", length = 255)
+    private String deviceNumber;
+
+    @Column(name = "gps_lat", precision = 10, scale = 7)
+    private BigDecimal gpsLat;
+
+    @Column(name = "gps_lon", precision = 10, scale = 7)
+    private BigDecimal gpsLon;
+
+    @Column(name = "installation_location_lat", precision = 10, scale = 7)
+    private BigDecimal installationLocationLat;
+
+    @Column(name = "installation_location_lon", precision = 10, scale = 7)
+    private BigDecimal installationLocationLon;
+
+    @Column(name = "cost_center", length = 255)
+    private String costCenter;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "meter_type_id")
+    private MeterType meterType;
+
+    @Column(name = "serial_number", length = 255)
+    private String serialNumber;
+
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress;
+
+    @Column(name = "verification_document_path", length = 500)
+    private String verificationDocumentPath;
+
+    @Column(name = "sensor_image_path", length = 500)
+    private String sensorImagePath;
+
+    @Column(name = "installation_date")
+    private LocalDate installationDate;
+
+    @Column(name = "last_inspection_date")
+    private LocalDate lastInspectionDate;
+
+    @Column(name = "current_transformer", length = 255)
+    private String currentTransformer;
+
+    @Column(name = "current_transformer_ratio", length = 100)
+    private String currentTransformerRatio;
+
+    @Column(name = "voltage_transformer_ratio", length = 100)
+    private String voltageTransformerRatio;
+
+    @Column(name = "voltage_transformer", length = 255)
+    private String voltageTransformer;
+
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
 
     // Constructors
     public Sensor() {
@@ -230,6 +297,69 @@ public class Sensor {
     public void setMetadata(String metadata) {
         this.metadata = metadata;
     }
+
+    public Sensor getParentSensor() { return parentSensor; }
+    public void setParentSensor(Sensor parentSensor) { this.parentSensor = parentSensor; }
+
+    public String getSensorTag() { return sensorTag; }
+    public void setSensorTag(String sensorTag) { this.sensorTag = sensorTag; }
+
+    public String getMedium() { return medium; }
+    public void setMedium(String medium) { this.medium = medium; }
+
+    public String getDeviceNumber() { return deviceNumber; }
+    public void setDeviceNumber(String deviceNumber) { this.deviceNumber = deviceNumber; }
+
+    public BigDecimal getGpsLat() { return gpsLat; }
+    public void setGpsLat(BigDecimal gpsLat) { this.gpsLat = gpsLat; }
+
+    public BigDecimal getGpsLon() { return gpsLon; }
+    public void setGpsLon(BigDecimal gpsLon) { this.gpsLon = gpsLon; }
+
+    public BigDecimal getInstallationLocationLat() { return installationLocationLat; }
+    public void setInstallationLocationLat(BigDecimal installationLocationLat) { this.installationLocationLat = installationLocationLat; }
+
+    public BigDecimal getInstallationLocationLon() { return installationLocationLon; }
+    public void setInstallationLocationLon(BigDecimal installationLocationLon) { this.installationLocationLon = installationLocationLon; }
+
+    public String getCostCenter() { return costCenter; }
+    public void setCostCenter(String costCenter) { this.costCenter = costCenter; }
+
+    public MeterType getMeterType() { return meterType; }
+    public void setMeterType(MeterType meterType) { this.meterType = meterType; }
+
+    public String getSerialNumber() { return serialNumber; }
+    public void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
+
+    public String getIpAddress() { return ipAddress; }
+    public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
+
+    public String getVerificationDocumentPath() { return verificationDocumentPath; }
+    public void setVerificationDocumentPath(String verificationDocumentPath) { this.verificationDocumentPath = verificationDocumentPath; }
+
+    public String getSensorImagePath() { return sensorImagePath; }
+    public void setSensorImagePath(String sensorImagePath) { this.sensorImagePath = sensorImagePath; }
+
+    public LocalDate getInstallationDate() { return installationDate; }
+    public void setInstallationDate(LocalDate installationDate) { this.installationDate = installationDate; }
+
+    public LocalDate getLastInspectionDate() { return lastInspectionDate; }
+    public void setLastInspectionDate(LocalDate lastInspectionDate) { this.lastInspectionDate = lastInspectionDate; }
+
+    public String getCurrentTransformer() { return currentTransformer; }
+    public void setCurrentTransformer(String currentTransformer) { this.currentTransformer = currentTransformer; }
+
+    public String getCurrentTransformerRatio() { return currentTransformerRatio; }
+    public void setCurrentTransformerRatio(String currentTransformerRatio) { this.currentTransformerRatio = currentTransformerRatio; }
+
+    public String getVoltageTransformerRatio() { return voltageTransformerRatio; }
+    public void setVoltageTransformerRatio(String voltageTransformerRatio) { this.voltageTransformerRatio = voltageTransformerRatio; }
+
+    public String getVoltageTransformer() { return voltageTransformer; }
+    public void setVoltageTransformer(String voltageTransformer) { this.voltageTransformer = voltageTransformer; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
     @Override
     public String toString() {
