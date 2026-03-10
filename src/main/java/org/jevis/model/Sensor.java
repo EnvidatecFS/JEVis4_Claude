@@ -137,7 +137,7 @@ public class Sensor {
     private LocalDate lastInspectionDate;
 
     @Column(name = "current_transformer", length = 255)
-    private String currentTransformer;
+    private Double currentTransformer;
 
     @Column(name = "current_transformer_ratio", length = 100)
     private String currentTransformerRatio;
@@ -146,7 +146,7 @@ public class Sensor {
     private String voltageTransformerRatio;
 
     @Column(name = "voltage_transformer", length = 255)
-    private String voltageTransformer;
+    private Double voltageTransformer;
 
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
@@ -346,8 +346,8 @@ public class Sensor {
     public LocalDate getLastInspectionDate() { return lastInspectionDate; }
     public void setLastInspectionDate(LocalDate lastInspectionDate) { this.lastInspectionDate = lastInspectionDate; }
 
-    public String getCurrentTransformer() { return currentTransformer; }
-    public void setCurrentTransformer(String currentTransformer) { this.currentTransformer = currentTransformer; }
+    public Double getCurrentTransformer() { return currentTransformer; }
+    public void setCurrentTransformer(Double currentTransformer) { this.currentTransformer = currentTransformer; }
 
     public String getCurrentTransformerRatio() { return currentTransformerRatio; }
     public void setCurrentTransformerRatio(String currentTransformerRatio) { this.currentTransformerRatio = currentTransformerRatio; }
@@ -355,8 +355,8 @@ public class Sensor {
     public String getVoltageTransformerRatio() { return voltageTransformerRatio; }
     public void setVoltageTransformerRatio(String voltageTransformerRatio) { this.voltageTransformerRatio = voltageTransformerRatio; }
 
-    public String getVoltageTransformer() { return voltageTransformer; }
-    public void setVoltageTransformer(String voltageTransformer) { this.voltageTransformer = voltageTransformer; }
+    public Double getVoltageTransformer() { return voltageTransformer; }
+    public void setVoltageTransformer(Double voltageTransformer) { this.voltageTransformer = voltageTransformer; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
