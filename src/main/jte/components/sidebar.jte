@@ -1,155 +1,259 @@
 @param String currentPage = ""
+@param boolean isAdmin = false
 
 <aside class="sidebar" id="sidebar">
-    <!-- Sidebar Navigation -->
     <nav class="sidebar-nav">
+
         <!-- Hauptmenü -->
-        <div class="nav-section">
-            <div class="nav-section-title">Hauptmenü</div>
-            <a href="/home" class="nav-item ${currentPage.equals("home") ? "active" : ""}" title="Übersicht">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Übersicht</span>
-            </a>
-            <a href="/dashboard" class="nav-item ${currentPage.equals("dashboard") ? "active" : ""}" title="Dashboard">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Dashboard</span>
-            </a>
+        <div class="nav-section" data-section="hauptmenu">
+            <div class="nav-section-title" onclick="toggleNavSection(this)">
+                <span>Hauptmenü</span>
+                <svg class="nav-section-chevron" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+            <div class="nav-section-items">
+                <a href="/home" class="nav-item ${currentPage.equals("home") ? "active" : ""}" title="Übersicht">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Übersicht</span>
+                </a>
+                <a href="/dashboard" class="nav-item ${currentPage.equals("dashboard") ? "active" : ""}" title="Dashboard">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Dashboard</span>
+                </a>
+            </div>
         </div>
 
         <!-- PV Anlagen -->
-        <div class="nav-section">
-            <div class="nav-section-title">PV Anlagen</div>
-            <a href="/plants" class="nav-item ${currentPage.equals("plants") ? "active" : ""}" title="Anlagen">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Anlagen</span>
-            </a>
-            <a href="/monitoring" class="nav-item ${currentPage.equals("monitoring") ? "active" : ""}" title="Monitoring">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Monitoring</span>
-            </a>
-            <a href="/analytics" class="nav-item ${currentPage.equals("analytics") ? "active" : ""}" title="Auswertungen">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Auswertungen</span>
-            </a>
+        <div class="nav-section" data-section="pv-anlagen">
+            <div class="nav-section-title" onclick="toggleNavSection(this)">
+                <span>PV Anlagen</span>
+                <svg class="nav-section-chevron" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+            <div class="nav-section-items">
+                <a href="/pv-dashboard" class="${"pv-dashboard".equals(currentPage) ? "nav-item active" : "nav-item"}" title="PV Live">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">PV Live</span>
+                </a>
+                <a href="/plants" class="nav-item ${currentPage.equals("plants") ? "active" : ""}" title="Anlagen">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Anlagen</span>
+                </a>
+                <a href="/monitoring" class="nav-item ${currentPage.equals("monitoring") ? "active" : ""}" title="Monitoring">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Monitoring</span>
+                </a>
+                <a href="/analytics" class="nav-item ${currentPage.equals("analytics") ? "active" : ""}" title="Auswertungen">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Auswertungen</span>
+                </a>
+            </div>
         </div>
 
-        <!-- Daten -->
-        <div class="nav-section">
-            <div class="nav-section-title">Datenverwaltung</div>
-            <a href="/sensors" class="nav-item ${currentPage.equals("sensors") ? "active" : ""}" title="Messpunkte">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Messpunkte</span>
-            </a>
-            <a href="/devices" class="nav-item ${currentPage.equals("devices") ? "active" : ""}" title="Geräte">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Geräte</span>
-            </a>
-            <a href="/data" class="nav-item ${currentPage.equals("data") ? "active" : ""}" title="Datenbank">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Datenbank</span>
-            </a>
-            <a href="/reports" class="nav-item ${currentPage.equals("reports") ? "active" : ""}" title="Berichte">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Berichte</span>
-            </a>
-            <a href="/csr" class="nav-item ${currentPage.equals("csr") ? "active" : ""}" title="CSR">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">CSR</span>
-            </a>
+        <!-- Datenverwaltung -->
+        <div class="nav-section" data-section="datenverwaltung">
+            <div class="nav-section-title" onclick="toggleNavSection(this)">
+                <span>Datenverwaltung</span>
+                <svg class="nav-section-chevron" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+            <div class="nav-section-items">
+                <a href="/sensors" class="nav-item ${currentPage.equals("sensors") ? "active" : ""}" title="Messpunkte">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Messpunkte</span>
+                </a>
+                <a href="/devices" class="nav-item ${currentPage.equals("devices") ? "active" : ""}" title="Datenquellen">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Datenquellen</span>
+                </a>
+                <a href="/reports" class="nav-item ${currentPage.equals("reports") ? "active" : ""}" title="Berichte">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Berichte</span>
+                </a>
+                <a href="/csr" class="nav-item ${currentPage.equals("csr") ? "active" : ""}" title="CSR">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">CSR</span>
+                </a>
+            </div>
         </div>
 
         <!-- Job System -->
-        <div class="nav-section">
-            <div class="nav-section-title">Job System</div>
-            <a href="/jobs" class="nav-item ${currentPage.equals("jobs") ? "active" : ""}" title="Jobs">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Jobs</span>
-            </a>
-            <a href="/workers" class="nav-item ${currentPage.equals("workers") ? "active" : ""}" title="Workers">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Workers</span>
-            </a>
+        <div class="nav-section" data-section="job-system">
+            <div class="nav-section-title" onclick="toggleNavSection(this)">
+                <span>Job System</span>
+                <svg class="nav-section-chevron" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+            <div class="nav-section-items">
+                <a href="/jobs" class="nav-item ${currentPage.equals("jobs") ? "active" : ""}" title="Jobs">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Jobs</span>
+                </a>
+                <a href="/workers" class="nav-item ${currentPage.equals("workers") ? "active" : ""}" title="Workers">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Workers</span>
+                </a>
+            </div>
         </div>
 
         <!-- System -->
-        <div class="nav-section">
-            <div class="nav-section-title">System</div>
-            <a href="/users" class="nav-item ${currentPage.equals("users") ? "active" : ""}" title="Benutzer">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Benutzer</span>
-            </a>
-            <a href="/settings" class="nav-item ${currentPage.equals("settings") ? "active" : ""}" title="Einstellungen">
-                <span class="nav-item-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Einstellungen</span>
-            </a>
-            <a href="/meter-types" class="${"meter-types".equals(currentPage) ? "nav-item active" : "nav-item"}" title="Zählerverwaltung">
-                <span class="nav-item-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-                    </svg>
-                </span>
-                <span class="nav-item-text">Zählerverwaltung</span>
-            </a>
+        <div class="nav-section" data-section="system">
+            <div class="nav-section-title" onclick="toggleNavSection(this)">
+                <span>System</span>
+                <svg class="nav-section-chevron" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+            <div class="nav-section-items">
+                @if(isAdmin)
+                <a href="/tenants" class="${"tenants".equals(currentPage) ? "nav-item active" : "nav-item"}" title="Mandanten">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Mandanten</span>
+                </a>
+                @endif
+                <a href="/users" class="nav-item ${currentPage.equals("users") ? "active" : ""}" title="Benutzer">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Benutzer</span>
+                </a>
+                <a href="/settings" class="nav-item ${currentPage.equals("settings") ? "active" : ""}" title="Einstellungen">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Einstellungen</span>
+                </a>
+                <a href="/simulation" class="${"simulation".equals(currentPage) ? "nav-item active" : "nav-item"}" title="Simulation">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Simulation</span>
+                </a>
+                <a href="/meter-types" class="${"meter-types".equals(currentPage) ? "nav-item active" : "nav-item"}" title="Zählerverwaltung">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Zählerverwaltung</span>
+                </a>
+                <a href="/database" class="${"database".equals(currentPage) ? "nav-item active" : "nav-item"}" title="Datenbank">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Datenbank</span>
+                </a>
+                <a href="/developer" class="${"developer".equals(currentPage) ? "nav-item active" : "nav-item"}" title="Entwickler">
+                    <span class="nav-item-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                        </svg>
+                    </span>
+                    <span class="nav-item-text">Entwickler</span>
+                </a>
+            </div>
         </div>
-    </nav>
 
+    </nav>
 </aside>
+
+<script>
+(function() {
+    function toggleNavSection(titleEl) {
+        // No-op when sidebar is icon-only collapsed
+        if (document.getElementById('sidebar').classList.contains('collapsed')) return;
+        var section = titleEl.closest('.nav-section');
+        var key = 'navSection_' + section.dataset.section;
+        var isNowCollapsed = !section.classList.contains('collapsed');
+        section.classList.toggle('collapsed', isNowCollapsed);
+        localStorage.setItem(key, isNowCollapsed ? '1' : '0');
+    }
+
+    function restoreSectionStates() {
+        document.querySelectorAll('.nav-section[data-section]').forEach(function(section) {
+            // Never collapse a section that contains the active page
+            if (section.querySelector('.nav-item.active')) return;
+            var key = 'navSection_' + section.dataset.section;
+            if (localStorage.getItem(key) === '1') {
+                section.classList.add('collapsed');
+            }
+        });
+    }
+
+    // Expose toggle for inline onclick
+    window.toggleNavSection = toggleNavSection;
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', restoreSectionStates);
+    } else {
+        restoreSectionStates();
+    }
+})();
+</script>

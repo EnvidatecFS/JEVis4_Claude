@@ -2,26 +2,26 @@
 @import java.util.List
 @import java.util.Map
 @import org.springframework.security.web.csrf.CsrfToken
+@import org.jevis.model.Tenant
 
 @param String username
 @param List<Sensor> sensors = null
 @param Map<String, List<Sensor>> sensorsByType = null
 @param CsrfToken _csrf = null
+@param boolean isAdmin = false
+@param List<Tenant> userTenants = java.util.Collections.emptyList()
+@param Tenant activeTenant = null
 
 @template.layout.app(
     title = "Dashboard",
     username = username,
     currentPage = "dashboard",
     _csrf = _csrf,
+    isAdmin = isAdmin,
+    userTenants = userTenants,
+    activeTenant = activeTenant,
     content = @`
-    <div class="page-header">
-        <div class="page-header-content">
-            <h1 class="page-title">Dashboard</h1>
-            <p class="page-description">Konfigurierbare Widgets fuer Ihre PV-Anlagen</p>
-        </div>
-    </div>
-
-    <!-- Centered Dashboard Toolbar -->
+    <!-- Dashboard Toolbar (single row) -->
     <div class="dashboard-toolbar">
         <!-- View Selector -->
         <div class="view-selector-wrapper" id="viewSelectorWrapper">
@@ -49,13 +49,15 @@
             </div>
         </div>
 
-        <!-- Save Split Button -->
+        <!-- Save Button (floppy icon only) -->
         <div class="split-btn-wrapper" id="saveSplitWrapper">
             <button class="btn btn-outline split-btn-main" onclick="saveCurrentView()" id="saveViewBtn" title="Aktuelle Ansicht speichern">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                <!-- Floppy disk icon -->
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
                 </svg>
-                Speichern
             </button>
             <button class="btn btn-outline split-btn-toggle" onclick="toggleSaveDropdown()" title="Weitere Speicheroptionen">
                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,8 +66,10 @@
             </button>
             <div class="split-btn-dropdown" id="saveDropdown">
                 <div class="split-btn-dropdown-item" onclick="saveCurrentView(); closeSaveDropdown();">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
                     </svg>
                     Speichern
                 </div>
@@ -78,13 +82,48 @@
             </div>
         </div>
 
-        <!-- Edit Mode Button -->
-        <button class="btn btn-outline" onclick="toggleEditMode()" id="editModeBtn">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        <!-- Edit Mode Button (lock icon) -->
+        <button class="btn btn-outline toolbar-icon-btn" onclick="toggleEditMode()" id="editModeBtn" title="Bearbeiten">
+            <!-- Closed lock = view mode -->
+            <svg id="lockIconClosed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <span id="editModeText">Bearbeiten</span>
+            <!-- Open lock = edit mode -->
+            <svg id="lockIconOpen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+            </svg>
         </button>
+
+        <!-- Toolbar separator -->
+        <div class="toolbar-separator"></div>
+
+        <!-- Interval buttons -->
+        <div class="time-interval-group">
+            <button class="interval-btn" data-interval="hour" onclick="setInterval_('hour')">Stunde</button>
+            <button class="interval-btn" data-interval="day" onclick="setInterval_('day')">Tag</button>
+            <button class="interval-btn" data-interval="workweek" onclick="setInterval_('workweek')">Arbeitswoche</button>
+            <button class="interval-btn" data-interval="week" onclick="setInterval_('week')">Woche</button>
+            <button class="interval-btn" data-interval="month" onclick="setInterval_('month')">Monat</button>
+            <button class="interval-btn" data-interval="year" onclick="setInterval_('year')">Jahr</button>
+        </div>
+
+        <!-- Time navigation -->
+        <div class="time-nav-group">
+            <button class="icon-button time-nav-btn" onclick="navigateTime(-1)" title="Zurück">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <span class="time-range-label" id="timeRangeLabel">—</span>
+            <button class="icon-button time-nav-btn" onclick="navigateTime(1)" title="Vorwärts">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+            <button class="btn btn-sm btn-secondary" onclick="goToNow()" style="margin-left:4px;">Heute</button>
+        </div>
 
         <!-- Add Widget (visible only in edit mode) -->
         <button class="btn btn-primary" onclick="openAddWidgetModal()" id="addWidgetBtn" style="display: none;">
@@ -252,6 +291,32 @@
                         <div class="widget-type-name">Karte</div>
                         <div class="widget-type-desc">Standorte anzeigen</div>
                     </div>
+                    <div class="widget-type-card" onclick="addWidget('sankey')">
+                        <div class="widget-type-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 5h6v4H2z" fill="currentColor" opacity="0.3"/>
+                                <path d="M2 15h6v4H2z" fill="currentColor" opacity="0.3"/>
+                                <path d="M16 8h6v8h-6z" fill="currentColor" opacity="0.3"/>
+                                <path d="M8 7 Q14 7 16 10" stroke-width="2.5"/>
+                                <path d="M8 17 Q14 17 16 14" stroke-width="2.5"/>
+                            </svg>
+                        </div>
+                        <div class="widget-type-name">Sankey-Diagramm</div>
+                        <div class="widget-type-desc">Energiefluss-Hierarchie</div>
+                    </div>
+                    <div class="widget-type-card" onclick="addWidget('scada')">
+                        <div class="widget-type-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="1"/>
+                                <circle cx="8" cy="10" r="2"/>
+                                <circle cx="16" cy="10" r="2"/>
+                                <path d="M8 10h8M12 8v4" stroke-width="1.5"/>
+                                <path d="M7 21h10M12 17v4" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="widget-type-name">SCADA-Ansicht</div>
+                        <div class="widget-type-desc">Bild mit Live-Werten</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -280,6 +345,19 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
                     </svg>
                     Datenquellen
+                </button>
+                <button class="settings-tab" data-tab="sankey" onclick="switchSettingsTab('sankey')" id="tabSankey" style="display:none;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                    </svg>
+                    Sankey
+                </button>
+                <button class="settings-tab" data-tab="scada" onclick="switchSettingsTab('scada')" id="tabScada" style="display:none;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="2" y="3" width="20" height="14" rx="1" stroke-width="2"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 21h8M12 17v4"/>
+                    </svg>
+                    SCADA
                 </button>
             </div>
 
@@ -389,11 +467,105 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Tab: Sankey Configuration -->
+                <div class="settings-tab-content" id="tabContentSankey"
+                     hx-get="/sankey/config/panel" hx-trigger="intersect once">
+                    <div style="padding:20px; text-align:center; color:var(--text-secondary);">Lädt...</div>
+                </div>
+
+                <!-- Tab: SCADA Layout -->
+                <div class="settings-tab-content" id="tabContentScada">
+                    <div class="form-group">
+                        <label class="form-label">Hintergrundbild</label>
+                        <select id="scadaSettingsImage" class="form-control" onchange="scadaSettingsImageChanged(this.value)">
+                            <option value="">-- Kein Bild --</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="display:flex;gap:0.5rem;align-items:center;">
+                        <button class="btn btn-outline btn-sm" onclick="document.getElementById('scadaSettingsUploadInput').click()">
+                            + Neues Bild hochladen
+                        </button>
+                        <input type="file" id="scadaSettingsUploadInput" accept="image/*" style="display:none" onchange="scadaSettingsUploadImage(this)">
+                        <span id="scadaUploadStatus" style="font-size:0.8rem;color:var(--text-muted);"></span>
+                    </div>
+                    <div style="margin-top:0.5rem;border-top:1px solid var(--border-color);padding-top:1rem;">
+                        <button class="btn btn-primary" onclick="openScadaEditorFromSettings()">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                            Layout bearbeiten
+                        </button>
+                        <p style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-muted);">Felder positionieren, Sensoren zuordnen, Darstellung anpassen.</p>
+                    </div>
+                </div>
             </div>
 
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeWidgetSettingsModal()">Abbrechen</button>
                 <button class="btn btn-primary" onclick="saveWidgetSettings()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCADA Editor Overlay -->
+    <div id="scadaEditorOverlay" style="display:none;position:fixed;inset:0;z-index:2000;background:var(--bg-color,#f5f7fa);flex-direction:column;">
+        <!-- Header -->
+        <div class="scada-editor-header">
+            <span class="scada-editor-title" id="scadaEditorTitle">SCADA Layout Editor</span>
+            <div style="display:flex;gap:0.5rem;">
+                <button class="btn btn-primary btn-sm" onclick="saveScadaEditor()">Speichern</button>
+                <button class="btn btn-outline btn-sm" onclick="closeScadaEditor()">Abbrechen</button>
+            </div>
+        </div>
+        <!-- Body: Palette | Canvas | Properties -->
+        <div class="scada-editor-body">
+            <!-- Left: Palette + Field List -->
+            <div class="scada-editor-palette">
+                <div style="padding:0.75rem;border-bottom:1px solid var(--border-color);">
+                    <button class="btn btn-outline btn-sm" style="width:100%;margin-bottom:0.4rem;" onclick="addScadaTextField()">+ Text-Feld</button>
+                    <button class="btn btn-outline btn-sm" style="width:100%;" onclick="addScadaValueField()">+ Wert-Feld</button>
+                </div>
+                <div style="padding:0.5rem 0.75rem;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Felder</div>
+                <div id="scadaEditorFieldList" style="flex:1;overflow-y:auto;padding:0 0.5rem;"></div>
+            </div>
+            <!-- Center: Canvas -->
+            <div class="scada-editor-center">
+                <div class="scada-editor-toolbar">
+                    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                        <label style="font-size:0.8rem;color:var(--text-muted);">Bild:</label>
+                        <select id="scadaImageSelect" class="form-control form-control-sm" style="width:220px;" onchange="scadaImageChanged(this.value)">
+                            <option value="">-- Kein Bild --</option>
+                        </select>
+                        <label style="font-size:0.8rem;color:var(--text-muted);">Design:</label>
+                        <input type="number" id="scadaDesignWidth" class="form-control form-control-sm" style="width:70px;" value="800" onchange="scadaDesignSizeChanged()">
+                        <span style="font-size:0.8rem;color:var(--text-muted);">×</span>
+                        <input type="number" id="scadaDesignHeight" class="form-control form-control-sm" style="width:70px;" value="450" onchange="scadaDesignSizeChanged()">
+                        <button class="btn btn-outline btn-sm" onclick="document.getElementById('scadaEditorUploadInput').click()">Bild hochladen</button>
+                        <input type="file" id="scadaEditorUploadInput" accept="image/*" style="display:none" onchange="scadaEditorUploadImage(this)">
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.4rem;border-top:1px solid var(--border-color);padding-top:0.4rem;">
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:var(--text-color);cursor:pointer;user-select:none;">
+                            <input type="checkbox" id="scadaSnapEnabled" checked onchange="scadaSnapToggle()">
+                            Raster
+                        </label>
+                        <input type="number" id="scadaSnapSize" class="form-control form-control-sm" style="width:60px;" value="10" min="1" max="200" title="Rastergröße in Pixeln">
+                        <span style="font-size:0.8rem;color:var(--text-muted);">px</span>
+                        <span style="font-size:0.75rem;color:var(--text-muted);margin-left:0.25rem;" id="scadaSnapHint">Felder rasten beim Ablegen ein</span>
+                    </div>
+                </div>
+                <div id="scadaEditorCanvasWrapper" class="scada-editor-canvas-wrapper"
+                     ondragover="scadaEditorCanvasDragOver(event)"
+                     ondrop="scadaEditorCanvasDrop(event)">
+                    <div id="scadaEditorCanvas" class="scada-editor-canvas"></div>
+                </div>
+            </div>
+            <!-- Right: Properties -->
+            <div class="scada-editor-properties">
+                <div style="padding:0.75rem;border-bottom:1px solid var(--border-color);font-size:0.85rem;font-weight:600;color:var(--text-color);">Eigenschaften</div>
+                <div id="scadaEditorProperties" style="overflow-y:auto;flex:1;">
+                    <p style="color:var(--text-muted);padding:1rem;font-size:0.85rem;">Feld auswählen</p>
+                </div>
             </div>
         </div>
     </div>
@@ -913,14 +1085,30 @@
             border-radius: var(--border-radius);
         }
 
-        /* Dashboard Toolbar - centered horizontal layout */
+        /* Dashboard Toolbar - single row */
         .dashboard-toolbar {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            justify-content: flex-start;
+            gap: 0.375rem;
             margin-bottom: 1rem;
             flex-wrap: wrap;
+        }
+        /* Compact padding for all buttons inside the toolbar */
+        .dashboard-toolbar .btn {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        .toolbar-icon-btn {
+            padding: 0.375rem 0.5rem !important;
+            display: inline-flex;
+            align-items: center;
+        }
+        .toolbar-separator {
+            width: 1px;
+            height: 24px;
+            background: var(--border-color);
+            margin: 0 0.125rem;
         }
 
         /* View Selector */
@@ -1137,6 +1325,201 @@
             font-size: 0.9rem;
             color: var(--text-color);
         }
+
+        /* Interval group (inside toolbar) */
+        .time-interval-group {
+            display: flex;
+            gap: 2px;
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            border-radius: var(--radius-md);
+            padding: 2px;
+        }
+        .interval-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: calc(var(--radius-md) - 2px);
+            background: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--primary-color);
+            font-family: inherit;
+            transition: background 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+        .interval-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        .interval-btn.active {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+        .time-nav-group {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        .time-nav-btn {
+            width: 28px;
+            height: 28px;
+        }
+        .time-range-label {
+            min-width: 200px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* ── SCADA Widget ─────────────────────────────────────────────────────── */
+        .scada-outer {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            border-radius: var(--border-radius);
+        }
+
+        .scada-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 120px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* ── SCADA Editor Overlay ─────────────────────────────────────────────── */
+        .scada-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .scada-editor-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .scada-editor-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .scada-editor-palette {
+            width: 200px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-color);
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .scada-editor-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--hover-color);
+        }
+
+        .scada-editor-toolbar {
+            padding: 0.5rem 0.75rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .scada-editor-canvas-wrapper {
+            flex: 1;
+            overflow: auto;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .scada-editor-canvas {
+            position: relative;
+            background: #1a1a2e;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .scada-editor-properties {
+            width: 260px;
+            flex-shrink: 0;
+            border-left: 1px solid var(--border-color);
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .scada-editor-field {
+            position: absolute;
+            cursor: grab;
+            border: 1px dashed transparent;
+            padding: 2px 6px;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .scada-editor-field:hover {
+            border-color: rgba(59, 130, 246, 0.6);
+        }
+
+        .scada-editor-field.selected {
+            border-color: var(--primary-color);
+            outline: 1px solid var(--primary-color);
+        }
+
+        .scada-field-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.35rem 0.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: var(--text-color);
+            transition: background 0.15s;
+        }
+
+        .scada-field-list-item:hover {
+            background: var(--hover-color);
+        }
+
+        .scada-field-list-item.active {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--primary-color);
+        }
+
+        .scada-field-del-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1;
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+
+        .scada-field-del-btn:hover {
+            background: var(--danger-color);
+            color: white;
+        }
     </style>
 
     <!-- GridStack JS -->
@@ -1163,6 +1546,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initGrid();
             loadDefaultWidgets();
+            updateTimeToolbar();
         });
 
         // Close view dropdown when clicking outside
@@ -1254,7 +1638,8 @@
                             layout.forEach(function(item) {
                                 createWidget(item.type, item.x, item.y, item.w, item.h, item.title, {
                                     sensorConfigs: item.sensorConfigs || [],
-                                    sensorIds: item.sensorIds || []
+                                    sensorIds: item.sensorIds || [],
+                                    config: item.config || null
                                 });
                             });
                             return;
@@ -1430,7 +1815,8 @@
                             layout.forEach(function(item) {
                                 createWidget(item.type, item.x, item.y, item.w, item.h, item.title, {
                                     sensorConfigs: item.sensorConfigs || [],
-                                    sensorIds: item.sensorIds || []
+                                    sensorIds: item.sensorIds || [],
+                                    config: item.config || null
                                 });
                             });
                         } catch(e) {
@@ -1454,6 +1840,7 @@
                 var w = widgets[id];
                 if (w.chart) w.chart.dispose();
                 if (w.map) w.map.remove();
+                if (w.scadaResizeObserver) w.scadaResizeObserver.disconnect();
             });
             widgets = {};
             widgetCounter = 0;
@@ -1471,6 +1858,7 @@
                         title: w.title,
                         sensorConfigs: w.sensorConfigs || [],
                         sensorIds: w.sensorIds || [],
+                        config: w.scadaConfig || null,
                         x: node.x,
                         y: node.y,
                         w: node.w,
@@ -1684,23 +2072,26 @@
         function toggleEditMode() {
             editMode = !editMode;
             var container = document.getElementById('dashboardGrid');
-            var text = document.getElementById('editModeText');
             var addBtn = document.getElementById('addWidgetBtn');
             var editBtn = document.getElementById('editModeBtn');
+            var lockClosed = document.getElementById('lockIconClosed');
+            var lockOpen = document.getElementById('lockIconOpen');
 
             if (editMode) {
                 container.classList.add('edit-mode');
-                text.textContent = 'Fertig';
                 editBtn.classList.remove('btn-outline');
                 editBtn.classList.add('btn-primary');
+                lockClosed.style.display = 'none';
+                lockOpen.style.display = '';
                 addBtn.style.display = 'inline-flex';
                 grid.enableMove(true);
                 grid.enableResize(true);
             } else {
                 container.classList.remove('edit-mode');
-                text.textContent = 'Bearbeiten';
                 editBtn.classList.remove('btn-primary');
                 editBtn.classList.add('btn-outline');
+                lockClosed.style.display = '';
+                lockOpen.style.display = 'none';
                 addBtn.style.display = 'none';
                 grid.enableMove(false);
                 grid.enableResize(false);
@@ -1726,9 +2117,14 @@
                 'pie': 'Kreisdiagramm',
                 'gauge': 'Tachometer',
                 'treemap': 'Treemap',
-                'map': 'Standortkarte'
+                'map': 'Standortkarte',
+                'sankey': 'Sankey-Diagramm',
+                'scada': 'SCADA-Ansicht'
             };
-            createWidget(type, 0, 0, 4, 4, titles[type] || 'Widget');
+            // Type-specific default sizes [w, h]
+            var sizes = { 'sankey': [10, 6], 'map': [6, 4], 'treemap': [6, 4], 'scada': [8, 6] };
+            var s = sizes[type] || [4, 4];
+            createWidget(type, 0, 0, s[0], s[1], titles[type] || 'Widget');
         }
 
         function createWidget(type, x, y, w, h, title, config) {
@@ -1739,8 +2135,10 @@
             config = config || {};
             var sensorConfigs = config.sensorConfigs || [];
             var sensorIds = config.sensorIds || [];
+            var scadaConfig = config.config || null;
 
             var content = document.createElement('div');
+
             content.innerHTML =
                 '<div class="widget-header">' +
                     '<h4 class="widget-title" data-widget-title>' + title + '</h4>' +
@@ -1782,6 +2180,8 @@
                 title: title,
                 sensorConfigs: sensorConfigs,
                 sensorIds: sensorIds,
+                scadaConfig: scadaConfig,
+                scadaResizeObserver: null,
                 chart: null,
                 map: null
             };
@@ -1798,6 +2198,8 @@
 
             if (type === 'map') {
                 initMapWidget(id, chartDom);
+            } else if (type === 'scada') {
+                initScadaWidget(id, chartDom);
             } else {
                 var chart = JEVisChartTheme.initChart(chartDom);
                 widgets[id].chart = chart;
@@ -1811,8 +2213,120 @@
             }
         }
 
+        // ─── Time Range State ────────────────────────────────────────────────────────
+        var timeState = {
+            interval: localStorage.getItem('dashboardInterval') || 'day',
+            offset: 0
+        };
+
+        function getTimeRange() {
+            var now = new Date();
+            var from, to;
+            var interval = timeState.interval;
+            var offset = timeState.offset;
+            switch (interval) {
+                case 'hour':
+                    from = new Date(now); from.setMinutes(0, 0, 0);
+                    from.setHours(from.getHours() + offset);
+                    to = new Date(from); to.setHours(to.getHours() + 1);
+                    break;
+                case 'day':
+                    from = new Date(now); from.setHours(0, 0, 0, 0);
+                    from.setDate(from.getDate() + offset);
+                    to = new Date(from); to.setDate(to.getDate() + 1);
+                    break;
+                case 'workweek':
+                    var wd = now.getDay(); var dMon = wd === 0 ? -6 : 1 - wd;
+                    from = new Date(now); from.setHours(0, 0, 0, 0);
+                    from.setDate(from.getDate() + dMon + offset * 7);
+                    to = new Date(from); to.setDate(to.getDate() + 5);
+                    break;
+                case 'week':
+                    var wd2 = now.getDay(); var dMon2 = wd2 === 0 ? -6 : 1 - wd2;
+                    from = new Date(now); from.setHours(0, 0, 0, 0);
+                    from.setDate(from.getDate() + dMon2 + offset * 7);
+                    to = new Date(from); to.setDate(to.getDate() + 7);
+                    break;
+                case 'month':
+                    from = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+                    to = new Date(now.getFullYear(), now.getMonth() + offset + 1, 1);
+                    break;
+                case 'year':
+                    from = new Date(now.getFullYear() + offset, 0, 1);
+                    to = new Date(now.getFullYear() + offset + 1, 0, 1);
+                    break;
+                default:
+                    from = new Date(now); from.setHours(0, 0, 0, 0);
+                    to = new Date(from); to.setDate(to.getDate() + 1);
+            }
+            return { from: from.toISOString(), to: to.toISOString() };
+        }
+
+        function getTimeRangeLabel() {
+            var tr = getTimeRange();
+            var f = new Date(tr.from);
+            var interval = timeState.interval;
+            var de = 'de-DE';
+            if (interval === 'hour') {
+                return f.toLocaleDateString(de, {day:'numeric', month:'long'}) + ', ' +
+                       f.toLocaleTimeString(de, {hour:'2-digit', minute:'2-digit'}) + ' – ' +
+                       new Date(tr.to).toLocaleTimeString(de, {hour:'2-digit', minute:'2-digit'});
+            } else if (interval === 'day') {
+                return f.toLocaleDateString(de, {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+            } else if (interval === 'workweek' || interval === 'week') {
+                var t = new Date(tr.to); t.setDate(t.getDate() - 1);
+                return f.toLocaleDateString(de, {day:'numeric', month:'short'}) + ' – ' +
+                       t.toLocaleDateString(de, {day:'numeric', month:'short', year:'numeric'});
+            } else if (interval === 'month') {
+                return f.toLocaleDateString(de, {month:'long', year:'numeric'});
+            } else if (interval === 'year') {
+                return String(f.getFullYear());
+            }
+            return '';
+        }
+
+        function updateTimeToolbar() {
+            document.querySelectorAll('.interval-btn').forEach(function(btn) {
+                btn.classList.toggle('active', btn.dataset.interval === timeState.interval);
+            });
+            document.getElementById('timeRangeLabel').textContent = getTimeRangeLabel();
+        }
+
+        function setInterval_(interval) {
+            timeState.interval = interval;
+            timeState.offset = 0;
+            localStorage.setItem('dashboardInterval', interval);
+            updateTimeToolbar();
+            refreshAllWidgets();
+        }
+
+        function navigateTime(dir) {
+            timeState.offset += dir;
+            updateTimeToolbar();
+            refreshAllWidgets();
+        }
+
+        function goToNow() {
+            timeState.offset = 0;
+            updateTimeToolbar();
+            refreshAllWidgets();
+        }
+
+        function refreshAllWidgets() {
+            Object.keys(widgets).forEach(function(id) {
+                loadWidgetData(id, widgets[id].type);
+            });
+        }
+        // ─────────────────────────────────────────────────────────────────────────────
+
         function loadWidgetData(id, type) {
             var w = widgets[id];
+
+            if (type === 'scada') {
+                loadScadaValues(id);
+                return;
+            }
+
             var chart = w.chart;
             if (!chart) return;
 
@@ -1820,14 +2334,25 @@
 
             var endpoint = '/dashboard/api/widget/' + (type === 'area' ? 'line' : type);
 
-            // Add sensor IDs to request if available
+            var params = new URLSearchParams();
+
+            // Add sensor IDs
             if (w.sensorIds && w.sensorIds.length > 0) {
-                var params = new URLSearchParams();
                 w.sensorIds.forEach(function(sensorId) {
                     params.append('sensorIds', sensorId);
                 });
-                endpoint += '?' + params.toString();
             }
+
+            // Add time range for time-sensitive widgets
+            var timeWidgets = ['line', 'area', 'bar', 'radial', 'treemap'];
+            if (timeWidgets.indexOf(type) !== -1) {
+                var tr = getTimeRange();
+                params.set('from', tr.from);
+                params.set('to', tr.to);
+            }
+
+            var qs = params.toString();
+            if (qs) endpoint += '?' + qs;
 
             // Build color map from sensorConfigs
             var colorMap = {};
@@ -1866,6 +2391,8 @@
                     return getGaugeOption(data, colorMap);
                 case 'treemap':
                     return getTreemapOption(data, colorMap);
+                case 'sankey':
+                    return getSankeyOption(data);
                 default:
                     return {};
             }
@@ -2176,6 +2703,86 @@
             };
         }
 
+        function getSankeyOption(data) {
+            if (!data.nodes || data.nodes.length === 0) {
+                return {
+                    title: {
+                        text: 'Keine Daten',
+                        subtext: 'Keine Hauptzähler mit Untermessungen gefunden.\nMesspunkte mit sensorTag "Hauptzähler" und Untermessungen anlegen.',
+                        left: 'center', top: 'center',
+                        textStyle: { fontSize: 14 },
+                        subtextStyle: { fontSize: 12 }
+                    }
+                };
+            }
+
+            return {
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: 'rgba(30,30,30,0.92)',
+                    borderColor: 'transparent',
+                    textStyle: { color: '#fff', fontSize: 13 },
+                    formatter: function(params) {
+                        if (params.dataType === 'edge') {
+                            var val = typeof params.data.value === 'number'
+                                ? params.data.value.toLocaleString('de-DE', {maximumFractionDigits: 1})
+                                : params.data.value;
+                            return '<strong>' + params.data.source + '</strong>'
+                                + ' &rarr; <strong>' + params.data.target + '</strong>'
+                                + '<br/>'
+                                + '<span style="font-size:16px;font-weight:700;">'
+                                + val + ' ' + (params.data.unit || '') + '</span>';
+                        }
+                        // node
+                        var d = params.data;
+                        var name = d.displayName || params.name;
+                        var html = '<strong>' + name + '</strong>';
+                        if (d.medium) html += '<br/><span style="color:#aaa;">Medium: ' + d.medium + '</span>';
+                        if (d.value != null) {
+                            var nval = Number(d.value).toLocaleString('de-DE', {maximumFractionDigits: 1});
+                            html += '<br/><span style="font-size:15px;font-weight:700;">'
+                                + nval + ' ' + (d.unit || '') + '</span>';
+                        }
+                        return html;
+                    }
+                },
+                series: [{
+                    type: 'sankey',
+                    layout: 'none',
+                    orient: 'horizontal',
+                    nodeWidth: 20,
+                    nodeGap: 14,
+                    top: '5%', bottom: '5%', left: '1%', right: '22%',
+                    emphasis: { focus: 'adjacency' },
+                    data: data.nodes,
+                    links: data.links,
+                    label: {
+                        show: true,
+                        position: 'right',
+                        fontSize: 12,
+                        color: JEVisChartTheme.getUIColors().axisLabel,
+                        formatter: function(params) {
+                            var d = params.data;
+                            var name = d.displayName || params.name;
+                            if (d.value != null) {
+                                var val = Number(d.value).toLocaleString('de-DE', {maximumFractionDigits: 1});
+                                return name + '\n' + val + ' ' + (d.unit || '');
+                            }
+                            return name;
+                        }
+                    },
+                    lineStyle: {
+                        color: 'source',
+                        opacity: 0.4,
+                        curveness: 0.5
+                    },
+                    itemStyle: {
+                        borderRadius: 3
+                    }
+                }]
+            };
+        }
+
         function initMapWidget(id, container) {
             fetch('/dashboard/api/widget/map')
                 .then(function(r) { return r.json(); })
@@ -2220,6 +2827,8 @@
 
             if (w.type === 'map' && w.map) {
                 w.map.invalidateSize();
+            } else if (w.type === 'scada') {
+                loadScadaValues(id);
             } else if (w.chart) {
                 loadWidgetData(id, w.type);
             }
@@ -2260,13 +2869,45 @@
                 'pie': 'Kreisdiagramm',
                 'gauge': 'Tachometer',
                 'treemap': 'Treemap',
-                'map': 'Karte'
+                'map': 'Karte',
+                'scada': 'SCADA-Ansicht'
             };
             document.getElementById('settingsWidgetType').value = typeNames[w.type] || w.type;
 
             // Show/hide datasources tab based on widget type
             var supportsSensors = ['line', 'area', 'bar', 'radial', 'treemap'].indexOf(w.type) !== -1;
             document.getElementById('tabDatasources').style.display = supportsSensors ? 'flex' : 'none';
+
+            var isSankey = w.type === 'sankey';
+            document.getElementById('tabSankey').style.display = isSankey ? 'flex' : 'none';
+
+            var isScada = w.type === 'scada';
+            document.getElementById('tabScada').style.display = isScada ? 'flex' : 'none';
+            if (isScada) {
+                // Initialize working copy of scadaConfig
+                scadaEditorWidgetId = id;
+                scadaEditorConfig = JSON.parse(JSON.stringify(w.scadaConfig || {
+                    backgroundImagePath: null,
+                    designWidth: 800,
+                    designHeight: 450,
+                    fields: []
+                }));
+                // Load images for this tenant
+                fetch('/scada/images')
+                    .then(function(r) { return r.json(); })
+                    .then(function(images) {
+                        scadaEditorImages = images;
+                        var sel = document.getElementById('scadaSettingsImage');
+                        sel.innerHTML = '<option value="">-- Kein Bild --</option>';
+                        images.forEach(function(img) {
+                            var opt = document.createElement('option');
+                            opt.value = img.filePath;
+                            opt.textContent = img.originalName || img.filePath;
+                            if (scadaEditorConfig.backgroundImagePath === img.filePath) opt.selected = true;
+                            sel.appendChild(opt);
+                        });
+                    });
+            }
 
             // Reset filters
             document.getElementById('sensorFilterName').value = '';
@@ -2333,6 +2974,10 @@
                 document.getElementById('tabContentGeneral').classList.add('active');
             } else if (tabName === 'datasources') {
                 document.getElementById('tabContentDatasources').classList.add('active');
+            } else if (tabName === 'sankey') {
+                document.getElementById('tabContentSankey').classList.add('active');
+            } else if (tabName === 'scada') {
+                document.getElementById('tabContentScada').classList.add('active');
             }
         }
 
@@ -2473,6 +3118,21 @@
                 };
             });
 
+            // Save scada config if scada widget
+            if (w.type === 'scada' && scadaEditorWidgetId === id) {
+                // Apply background image from settings select
+                var sel = document.getElementById('scadaSettingsImage');
+                if (sel) scadaEditorConfig.backgroundImagePath = sel.value || null;
+
+                w.scadaConfig = JSON.parse(JSON.stringify(scadaEditorConfig));
+                // Re-render the widget
+                var chartDom = document.getElementById(id + '_chart');
+                if (chartDom) {
+                    chartDom.innerHTML = '';
+                    initScadaWidget(id, chartDom);
+                }
+            }
+
             // Also keep sensorIds for backward compatibility
             w.sensorIds = selectedSensorsData.map(function(s) { return s.id; });
 
@@ -2483,6 +3143,512 @@
 
             saveLayout();
             closeWidgetSettingsModal();
+        }
+
+        // ─── SCADA Widget Rendering ───────────────────────────────────────────────
+
+        function initScadaWidget(id, container) {
+            var outer = document.createElement('div');
+            outer.id = id + '_scada_outer';
+            outer.className = 'scada-outer';
+            container.style.padding = '0';
+            container.appendChild(outer);
+
+            var inner = document.createElement('div');
+            inner.id = id + '_scada_inner';
+            inner.style.position = 'relative';
+            outer.appendChild(inner);
+
+            renderScadaCanvas(id);
+
+            var ro = new ResizeObserver(function() { scaleScadaCanvas(id); });
+            ro.observe(container);
+            widgets[id].scadaResizeObserver = ro;
+        }
+
+        function renderScadaCanvas(id) {
+            var w = widgets[id];
+            var inner = document.getElementById(id + '_scada_inner');
+            if (!inner) return;
+
+            var cfg = w.scadaConfig;
+            if (!cfg) {
+                inner.innerHTML = '<div class="scada-placeholder">' +
+                    '<svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:0.4;">' +
+                    '<rect x="2" y="3" width="20" height="14" rx="1" stroke-width="1.5"/><circle cx="8" cy="10" r="2" stroke-width="1.5"/>' +
+                    '</svg>' +
+                    '<span>SCADA-Layout konfigurieren<br><small>(Bearbeiten → Einstellungen)</small></span></div>';
+                return;
+            }
+
+            var dw = cfg.designWidth || 800;
+            var dh = cfg.designHeight || 450;
+            inner.style.width = dw + 'px';
+            inner.style.height = dh + 'px';
+
+            if (cfg.backgroundImagePath) {
+                inner.style.backgroundImage = 'url(/uploads/' + cfg.backgroundImagePath + ')';
+                inner.style.backgroundSize = 'cover';
+                inner.style.backgroundPosition = 'center';
+                inner.style.backgroundColor = '#1a1a2e';
+            } else {
+                inner.style.backgroundImage = 'none';
+                inner.style.backgroundColor = '#1a1a2e';
+            }
+
+            inner.innerHTML = '';
+            (cfg.fields || []).forEach(function(f) {
+                var el = document.createElement('div');
+                el.style.cssText = 'position:absolute;left:' + (f.x || 0) + 'px;top:' + (f.y || 0) + 'px;' +
+                    'font-size:' + (f.fontSize || 16) + 'px;color:' + (f.color || '#ffffff') + ';' +
+                    'font-weight:' + (f.fontWeight || 'normal') + ';' +
+                    'background:' + (f.bgColor || 'transparent') + ';' +
+                    'border:1px solid ' + (f.borderColor || 'transparent') + ';' +
+                    'padding:2px 6px;white-space:nowrap;' +
+                    (f.width ? 'width:' + f.width + 'px;overflow:hidden;' : '');
+
+                if (f.type === 'TEXT') {
+                    el.textContent = f.text || '';
+                } else {
+                    el.innerHTML = '<span id="scada_val_' + id + '_' + f.id + '">—</span>' +
+                        (f.unit ? ' ' + escapeHtml(f.unit) : '');
+                }
+                inner.appendChild(el);
+            });
+
+            scaleScadaCanvas(id);
+        }
+
+        function scaleScadaCanvas(id) {
+            var w = widgets[id];
+            if (!w || !w.scadaConfig) return;
+            var outer = document.getElementById(id + '_scada_outer');
+            var inner = document.getElementById(id + '_scada_inner');
+            if (!outer || !inner) return;
+            var dw = w.scadaConfig.designWidth || 800;
+            var dh = w.scadaConfig.designHeight || 450;
+            var containerW = outer.clientWidth || dw;
+            var scale = containerW / dw;
+            inner.style.transform = 'scale(' + scale + ')';
+            inner.style.transformOrigin = 'top left';
+            outer.style.height = (dh * scale) + 'px';
+        }
+
+        function loadScadaValues(id) {
+            var w = widgets[id];
+            if (!w || !w.scadaConfig || !w.scadaConfig.fields) return;
+            var valueSensorIds = w.scadaConfig.fields
+                .filter(function(f) { return f.type === 'VALUE' && f.sensorId; })
+                .map(function(f) { return f.sensorId; });
+            if (valueSensorIds.length === 0) return;
+            var params = new URLSearchParams();
+            valueSensorIds.forEach(function(sid) { params.append('sensorIds', sid); });
+            fetch('/scada/values?' + params.toString())
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    w.scadaConfig.fields.forEach(function(f) {
+                        if (f.type !== 'VALUE' || !f.sensorId) return;
+                        var span = document.getElementById('scada_val_' + id + '_' + f.id);
+                        if (!span) return;
+                        var val = data[String(f.sensorId)];
+                        if (val !== undefined && val !== null) {
+                            var dp = (f.decimalPlaces !== undefined) ? f.decimalPlaces : 1;
+                            var num = parseFloat(val);
+                            span.textContent = isNaN(num) ? String(val) : num.toFixed(dp);
+                        }
+                    });
+                })
+                .catch(function(err) { console.error('SCADA values error:', err); });
+        }
+
+        // ─── SCADA Settings Tab helpers ───────────────────────────────────────────
+
+        function scadaSettingsImageChanged(value) {
+            if (scadaEditorConfig) scadaEditorConfig.backgroundImagePath = value || null;
+        }
+
+        function scadaSettingsUploadImage(input) {
+            if (!input.files || !input.files[0]) return;
+            var statusEl = document.getElementById('scadaUploadStatus');
+            statusEl.textContent = 'Hochladen...';
+
+            var formData = new FormData();
+            formData.append('file', input.files[0]);
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            var csrfHeader = document.querySelector('meta[name="csrf-header"]');
+            var headers = {};
+            if (csrfToken && csrfHeader) headers[csrfHeader.content] = csrfToken.content;
+
+            fetch('/scada/images/upload', { method: 'POST', headers: headers, body: formData })
+                .then(function(r) { return r.json(); })
+                .then(function(img) {
+                    scadaEditorImages.push(img);
+                    var sel = document.getElementById('scadaSettingsImage');
+                    var opt = document.createElement('option');
+                    opt.value = img.filePath;
+                    opt.textContent = img.originalName || img.filePath;
+                    opt.selected = true;
+                    sel.appendChild(opt);
+                    scadaEditorConfig.backgroundImagePath = img.filePath;
+                    statusEl.textContent = 'Hochgeladen!';
+                    setTimeout(function() { statusEl.textContent = ''; }, 2000);
+                    input.value = '';
+                })
+                .catch(function() { statusEl.textContent = 'Fehler beim Hochladen'; });
+        }
+
+        function openScadaEditorFromSettings() {
+            // Sync background image from settings select before opening
+            var sel = document.getElementById('scadaSettingsImage');
+            if (sel && scadaEditorConfig) scadaEditorConfig.backgroundImagePath = sel.value || null;
+            openScadaEditor(scadaEditorWidgetId);
+        }
+
+        // ─── SCADA Editor ─────────────────────────────────────────────────────────
+
+        var scadaEditorWidgetId = null;
+        var scadaEditorConfig = null;
+        var scadaEditorSelectedFieldId = null;
+        var scadaEditorImages = [];
+        var scadaSnapEnabled = true;
+
+        function snapCoord(v) {
+            if (!scadaSnapEnabled) return Math.round(v);
+            var size = parseInt(document.getElementById('scadaSnapSize').value) || 10;
+            return Math.round(v / size) * size;
+        }
+
+        function scadaSnapToggle() {
+            scadaSnapEnabled = document.getElementById('scadaSnapEnabled').checked;
+            var hint = document.getElementById('scadaSnapHint');
+            hint.textContent = scadaSnapEnabled ? 'Felder rasten beim Ablegen ein' : 'Freie Positionierung aktiv';
+        }
+
+        function openScadaEditor(widgetId) {
+            scadaEditorWidgetId = widgetId;
+            var w = widgets[widgetId];
+            if (!scadaEditorConfig) {
+                scadaEditorConfig = JSON.parse(JSON.stringify(w.scadaConfig || {
+                    backgroundImagePath: null, designWidth: 800, designHeight: 450, fields: []
+                }));
+            }
+            scadaEditorSelectedFieldId = null;
+
+            document.getElementById('scadaEditorTitle').textContent =
+                'SCADA Layout Editor: ' + (w.title || 'Widget');
+            document.getElementById('scadaDesignWidth').value = scadaEditorConfig.designWidth || 800;
+            document.getElementById('scadaDesignHeight').value = scadaEditorConfig.designHeight || 450;
+
+            renderScadaEditorImageSelect();
+            renderScadaEditorCanvas();
+            renderScadaEditorFieldList();
+            renderScadaEditorProperties();
+
+            document.getElementById('scadaEditorOverlay').style.display = 'flex';
+        }
+
+        function closeScadaEditor() {
+            document.getElementById('scadaEditorOverlay').style.display = 'none';
+        }
+
+        function saveScadaEditor() {
+            if (!scadaEditorWidgetId) return;
+            var w = widgets[scadaEditorWidgetId];
+            w.scadaConfig = JSON.parse(JSON.stringify(scadaEditorConfig));
+            // Update sensorIds list from scada fields
+            w.sensorIds = (scadaEditorConfig.fields || [])
+                .filter(function(f) { return f.type === 'VALUE' && f.sensorId; })
+                .map(function(f) { return f.sensorId; });
+
+            var chartDom = document.getElementById(scadaEditorWidgetId + '_chart');
+            if (chartDom) {
+                chartDom.innerHTML = '';
+                initScadaWidget(scadaEditorWidgetId, chartDom);
+            }
+            saveLayout();
+            closeScadaEditor();
+        }
+
+        function renderScadaEditorImageSelect() {
+            var sel = document.getElementById('scadaImageSelect');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">-- Kein Bild --</option>';
+            scadaEditorImages.forEach(function(img) {
+                var opt = document.createElement('option');
+                opt.value = img.filePath;
+                opt.textContent = img.originalName || img.filePath;
+                if (scadaEditorConfig.backgroundImagePath === img.filePath) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        function scadaImageChanged(value) {
+            scadaEditorConfig.backgroundImagePath = value || null;
+            renderScadaEditorCanvas();
+        }
+
+        function scadaDesignSizeChanged() {
+            scadaEditorConfig.designWidth = parseInt(document.getElementById('scadaDesignWidth').value) || 800;
+            scadaEditorConfig.designHeight = parseInt(document.getElementById('scadaDesignHeight').value) || 450;
+            renderScadaEditorCanvas();
+        }
+
+        function addScadaTextField() {
+            var f = {
+                id: 'f' + Date.now(), type: 'TEXT',
+                x: 50, y: 50, width: null, text: 'Label', fontSize: 18,
+                color: '#ffffff', fontWeight: 'normal',
+                bgColor: 'rgba(0,0,0,0)', borderColor: 'transparent'
+            };
+            scadaEditorConfig.fields.push(f);
+            renderScadaEditorCanvas();
+            renderScadaEditorFieldList();
+            selectScadaField(f.id);
+        }
+
+        function addScadaValueField() {
+            var f = {
+                id: 'f' + Date.now(), type: 'VALUE',
+                x: 100, y: 100, width: null, sensorId: null, unit: '', decimalPlaces: 1,
+                fontSize: 18, color: '#ffffff', fontWeight: 'bold',
+                bgColor: 'rgba(0,0,0,0.4)', borderColor: 'transparent'
+            };
+            scadaEditorConfig.fields.push(f);
+            renderScadaEditorCanvas();
+            renderScadaEditorFieldList();
+            selectScadaField(f.id);
+        }
+
+        function removeScadaField(fieldId) {
+            scadaEditorConfig.fields = scadaEditorConfig.fields.filter(function(f) { return f.id !== fieldId; });
+            if (scadaEditorSelectedFieldId === fieldId) scadaEditorSelectedFieldId = null;
+            renderScadaEditorCanvas();
+            renderScadaEditorFieldList();
+            renderScadaEditorProperties();
+        }
+
+        function selectScadaField(fieldId) {
+            scadaEditorSelectedFieldId = fieldId;
+            renderScadaEditorFieldList();
+            renderScadaEditorProperties();
+            document.querySelectorAll('.scada-editor-field').forEach(function(el) {
+                el.classList.toggle('selected', el.dataset.fieldId === fieldId);
+            });
+        }
+
+        function renderScadaEditorFieldList() {
+            var ul = document.getElementById('scadaEditorFieldList');
+            if (!ul) return;
+            ul.innerHTML = '';
+            (scadaEditorConfig.fields || []).forEach(function(f) {
+                var li = document.createElement('div');
+                li.className = 'scada-field-list-item' + (f.id === scadaEditorSelectedFieldId ? ' active' : '');
+                var label = f.type === 'TEXT' ? 'T: ' + (f.text || '—') : 'V: sensor ' + (f.sensorId || '—');
+                li.textContent = label;
+                li.onclick = function() { selectScadaField(f.id); };
+                var del = document.createElement('button');
+                del.className = 'scada-field-del-btn';
+                del.innerHTML = '&times;';
+                del.onclick = function(e) { e.stopPropagation(); removeScadaField(f.id); };
+                li.appendChild(del);
+                ul.appendChild(li);
+            });
+        }
+
+        function renderScadaEditorCanvas() {
+            var canvas = document.getElementById('scadaEditorCanvas');
+            if (!canvas) return;
+            var dw = scadaEditorConfig.designWidth || 800;
+            var dh = scadaEditorConfig.designHeight || 450;
+            canvas.style.width = dw + 'px';
+            canvas.style.height = dh + 'px';
+
+            if (scadaEditorConfig.backgroundImagePath) {
+                canvas.style.backgroundImage = 'url(/uploads/' + scadaEditorConfig.backgroundImagePath + ')';
+                canvas.style.backgroundSize = 'cover';
+                canvas.style.backgroundPosition = 'center';
+            } else {
+                canvas.style.backgroundImage = 'none';
+                canvas.style.backgroundColor = '#1a1a2e';
+            }
+
+            canvas.querySelectorAll('.scada-editor-field').forEach(function(el) { el.remove(); });
+
+            (scadaEditorConfig.fields || []).forEach(function(f) {
+                var el = document.createElement('div');
+                el.className = 'scada-editor-field' + (f.id === scadaEditorSelectedFieldId ? ' selected' : '');
+                el.dataset.fieldId = f.id;
+                el.style.left = (f.x || 0) + 'px';
+                el.style.top = (f.y || 0) + 'px';
+                el.style.fontSize = (f.fontSize || 16) + 'px';
+                el.style.color = f.color || '#ffffff';
+                el.style.fontWeight = f.fontWeight || 'normal';
+                el.style.background = f.bgColor || 'transparent';
+                el.style.border = '1px dashed ' + (f.id === scadaEditorSelectedFieldId ? 'var(--primary-color)' : 'transparent');
+                el.style.padding = '2px 6px';
+                if (f.width) { el.style.width = f.width + 'px'; el.style.overflow = 'hidden'; el.style.whiteSpace = 'nowrap'; }
+                el.textContent = f.type === 'TEXT' ? (f.text || 'Label') : ('42.3 ' + (f.unit || ''));
+                el.draggable = true;
+                el.onclick = function(e) { e.stopPropagation(); selectScadaField(f.id); };
+                el.ondragstart = function(e) {
+                    e.dataTransfer.setData('fieldId', f.id);
+                    e.dataTransfer.setData('offsetX', String(e.offsetX));
+                    e.dataTransfer.setData('offsetY', String(e.offsetY));
+                };
+                canvas.appendChild(el);
+            });
+
+            // Scale canvas to fit wrapper
+            var wrapper = document.getElementById('scadaEditorCanvasWrapper');
+            if (wrapper && wrapper.clientWidth > 0) {
+                var scale = Math.min(1, (wrapper.clientWidth - 32) / dw);
+                canvas.style.transform = 'scale(' + scale + ')';
+                canvas.style.transformOrigin = 'top left';
+                wrapper.style.minHeight = (dh * scale + 32) + 'px';
+            }
+        }
+
+        function renderScadaEditorProperties() {
+            var panel = document.getElementById('scadaEditorProperties');
+            if (!panel) return;
+            if (!scadaEditorSelectedFieldId) {
+                panel.innerHTML = '<p style="color:var(--text-muted);padding:1rem;font-size:0.85rem;">Feld auswählen oder hinzufügen</p>';
+                return;
+            }
+            var f = (scadaEditorConfig.fields || []).find(function(x) { return x.id === scadaEditorSelectedFieldId; });
+            if (!f) { panel.innerHTML = ''; return; }
+
+            var sensorOptions = '<option value="">-- Kein Sensor --</option>';
+            document.querySelectorAll('#availableSensorList .sensor-item').forEach(function(sEl) {
+                var sid = sEl.dataset.sensorId;
+                var sname = escapeHtml(sEl.dataset.name || sid);
+                sensorOptions += '<option value="' + sid + '"' + (String(f.sensorId) === sid ? ' selected' : '') + '>' + sname + '</option>';
+            });
+
+            var html = '<div style="padding:0.75rem;display:flex;flex-direction:column;gap:0.6rem;">';
+            html += prop('X-Position', 'number', f.x || 0, 'updateScadaField(\'' + f.id + '\',\'x\',snapCoord(parseInt(this.value)||0))');
+            html += prop('Y-Position', 'number', f.y || 0, 'updateScadaField(\'' + f.id + '\',\'y\',snapCoord(parseInt(this.value)||0))');
+            html += '<div class="form-group" style="margin:0;">' +
+                '<label class="filter-label">Breite (px)</label>' +
+                '<input type="number" class="form-control form-control-sm" value="' + (f.width || '') + '" min="20" placeholder="auto"' +
+                ' onchange="updateScadaField(\'' + f.id + '\',\'width\',this.value?parseInt(this.value):null)"></div>';
+            if (f.type === 'TEXT') {
+                html += prop('Text', 'text', escapeHtml(f.text || ''), 'updateScadaField(\'' + f.id + '\',\'text\',this.value)');
+            } else {
+                html += '<div class="form-group" style="margin:0;"><label class="filter-label">Sensor</label>' +
+                    '<select class="form-control form-control-sm" onchange="updateScadaField(\'' + f.id + '\',\'sensorId\',this.value?parseInt(this.value):null)">' +
+                    sensorOptions + '</select></div>';
+                html += prop('Einheit', 'text', escapeHtml(f.unit || ''), 'updateScadaField(\'' + f.id + '\',\'unit\',this.value)', 'z.B. kW');
+                html += prop('Dezimalstellen', 'number', f.decimalPlaces !== undefined ? f.decimalPlaces : 1, 'updateScadaField(\'' + f.id + '\',\'decimalPlaces\',parseInt(this.value)||0)');
+            }
+            html += prop('Schriftgröße', 'number', f.fontSize || 16, 'updateScadaField(\'' + f.id + '\',\'fontSize\',parseInt(this.value)||16)');
+            html += '<div class="form-group" style="margin:0;"><label class="filter-label">Textfarbe</label>' +
+                '<input type="color" class="selected-sensor-color" style="width:100%;height:32px;" value="' + (f.color || '#ffffff') + '" onchange="updateScadaField(\'' + f.id + '\',\'color\',this.value)"></div>';
+            html += '<div class="form-group" style="margin:0;"><label class="filter-label">Schriftgewicht</label>' +
+                '<select class="form-control form-control-sm" onchange="updateScadaField(\'' + f.id + '\',\'fontWeight\',this.value)">' +
+                '<option value="normal"' + (f.fontWeight === 'normal' ? ' selected' : '') + '>Normal</option>' +
+                '<option value="bold"' + (f.fontWeight === 'bold' ? ' selected' : '') + '>Fett</option>' +
+                '</select></div>';
+            var bgParsed = parseBgColor(f.bgColor || 'rgba(0,0,0,0)');
+            var bgHexId   = 'bg_hex_'   + f.id;
+            var bgAlphaId = 'bg_alpha_' + f.id;
+            html += '<div class="form-group" style="margin:0;">' +
+                '<label class="filter-label">Hintergrundfarbe</label>' +
+                '<div style="display:flex;gap:0.5rem;align-items:center;">' +
+                    '<input type="color" class="selected-sensor-color" style="width:36px;height:32px;flex-shrink:0;" id="' + bgHexId + '" value="' + bgParsed.hex + '"' +
+                        ' onchange="updateScadaBgColor(\'' + f.id + '\',\'' + bgHexId + '\',\'' + bgAlphaId + '\')">' +
+                    '<div style="flex:1;display:flex;flex-direction:column;gap:2px;">' +
+                        '<input type="range" id="' + bgAlphaId + '" min="0" max="100" value="' + Math.round(bgParsed.alpha * 100) + '"' +
+                            ' style="width:100%;cursor:pointer;"' +
+                            ' oninput="updateScadaBgColor(\'' + f.id + '\',\'' + bgHexId + '\',\'' + bgAlphaId + '\');document.getElementById(\'bg_pct_' + f.id + '\').textContent=this.value+\'%\'">' +
+                        '<span id="bg_pct_' + f.id + '" style="font-size:0.75rem;color:var(--text-muted);">' + Math.round(bgParsed.alpha * 100) + '% Deckkraft</span>' +
+                    '</div>' +
+                '</div>' +
+                '</div>';
+            html += '<button class="btn btn-sm" style="background:var(--danger-color);color:white;border:none;margin-top:0.25rem;" onclick="removeScadaField(\'' + f.id + '\')">Feld entfernen</button>';
+            html += '</div>';
+            panel.innerHTML = html;
+        }
+
+        function prop(label, type, value, onchange, placeholder) {
+            return '<div class="form-group" style="margin:0;">' +
+                '<label class="filter-label">' + label + '</label>' +
+                '<input type="' + type + '" class="form-control form-control-sm" value="' + value + '"' +
+                (placeholder ? ' placeholder="' + placeholder + '"' : '') +
+                ' onchange="' + onchange + '"></div>';
+        }
+
+        function parseBgColor(colorStr) {
+            if (!colorStr || colorStr === 'transparent') return { hex: '#000000', alpha: 0 };
+            var m = colorStr.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/);
+            if (m) {
+                var r = parseInt(m[1]), g = parseInt(m[2]), b = parseInt(m[3]);
+                var a = m[4] !== undefined ? parseFloat(m[4]) : 1;
+                return {
+                    hex: '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0'),
+                    alpha: a
+                };
+            }
+            if (colorStr.startsWith('#')) return { hex: colorStr, alpha: 1 };
+            return { hex: '#000000', alpha: 0 };
+        }
+
+        function updateScadaBgColor(fieldId, hexInputId, alphaInputId) {
+            var hex   = document.getElementById(hexInputId).value;
+            var alpha = parseInt(document.getElementById(alphaInputId).value) / 100;
+            var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+            var bgColor = alpha <= 0 ? 'rgba(0,0,0,0)'
+                        : alpha >= 1 ? hex
+                        : 'rgba(' + r + ',' + g + ',' + b + ',' + alpha.toFixed(2) + ')';
+            updateScadaField(fieldId, 'bgColor', bgColor);
+        }
+
+        function updateScadaField(fieldId, prop, value) {
+            var f = (scadaEditorConfig.fields || []).find(function(x) { return x.id === fieldId; });
+            if (!f) return;
+            f[prop] = value;
+            renderScadaEditorCanvas();
+            renderScadaEditorFieldList();
+        }
+
+        function scadaEditorCanvasDragOver(e) { e.preventDefault(); }
+
+        function scadaEditorCanvasDrop(e) {
+            e.preventDefault();
+            var fieldId = e.dataTransfer.getData('fieldId');
+            var offX = parseInt(e.dataTransfer.getData('offsetX')) || 0;
+            var offY = parseInt(e.dataTransfer.getData('offsetY')) || 0;
+            var canvas = document.getElementById('scadaEditorCanvas');
+            if (!canvas) return;
+            var rect = canvas.getBoundingClientRect();
+            var scaleStr = canvas.style.transform.replace('scale(', '').replace(')', '');
+            var scale = parseFloat(scaleStr) || 1;
+            var x = Math.max(0, snapCoord((e.clientX - rect.left) / scale - offX));
+            var y = Math.max(0, snapCoord((e.clientY - rect.top) / scale - offY));
+            updateScadaField(fieldId, 'x', x);
+            updateScadaField(fieldId, 'y', y);
+            selectScadaField(fieldId);
+            renderScadaEditorProperties();
+        }
+
+        function scadaEditorUploadImage(input) {
+            if (!input.files || !input.files[0]) return;
+            var formData = new FormData();
+            formData.append('file', input.files[0]);
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            var csrfHeader = document.querySelector('meta[name="csrf-header"]');
+            var headers = {};
+            if (csrfToken && csrfHeader) headers[csrfHeader.content] = csrfToken.content;
+            fetch('/scada/images/upload', { method: 'POST', headers: headers, body: formData })
+                .then(function(r) { return r.json(); })
+                .then(function(img) {
+                    scadaEditorImages.push(img);
+                    scadaEditorConfig.backgroundImagePath = img.filePath;
+                    renderScadaEditorImageSelect();
+                    renderScadaEditorCanvas();
+                    input.value = '';
+                })
+                .catch(function(err) { console.error('Upload failed:', err); });
         }
     </script>
     `
